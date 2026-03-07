@@ -7,7 +7,7 @@
   <div id="search-results"></div>
 </section>
 
-<details>
+<details id="upload-section" open>
   <summary>Upload CSV</summary>
   <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
 
@@ -37,6 +37,7 @@
     const feedback = document.getElementById("upload-feedback");
     const statusSection = document.getElementById("catalog-status-section");
     const statusDiv = document.getElementById("catalog-status");
+    const uploadSection = document.getElementById("upload-section");
     const uploadUrl = "<%= @songs_upload_url %>";
     const tokenUrl = "<%= upload_token_catalog_path(@catalog) %>";
     const catalogId = "<%= @catalog.id %>";
@@ -54,6 +55,7 @@
         .then(data => {
           if (data.active_db_version) {
             searchSection.hidden = false;
+            uploadSection.removeAttribute("open");
             if (data.song_count != null) {
               songCountEl.textContent = data.song_count.toLocaleString() + " songs";
             }
@@ -89,11 +91,14 @@
     });
 
     async function performSearch(query) {
-      searchResults.innerHTML = '<p aria-busy="true">Searching…</p>';
+      const loadingTimer = setTimeout(() => {
+        searchResults.innerHTML = '<p aria-busy="true">Searching…</p>';
+      }, 500);
 
       try {
         const response = await fetch(searchUrl + "?q=" + encodeURIComponent(query) + "&limit=50");
         const data = await response.json();
+        clearTimeout(loadingTimer);
 
         if (!response.ok) {
           searchResults.innerHTML = '<p class="flash alert">' + (data.error || "Search failed.") + '</p>';
@@ -107,6 +112,7 @@
 
         renderResults(data);
       } catch (err) {
+        clearTimeout(loadingTimer);
         searchResults.innerHTML = '<p class="flash alert">Could not reach the songs service.</p>';
       }
     }
@@ -124,9 +130,9 @@
 
       data.songs.forEach(function(song) {
         html += '<tr>';
-        html += '<td>' + song.title_highlighted + '</td>';
-        html += '<td>' + song.artist_highlighted + '</td>';
-        if (hasVersion) html += '<td>' + (song.version_highlighted || '') + '</td>';
+        html += '<td>' + escapeHtml(song.title) + '</td>';
+        html += '<td>' + escapeHtml(song.artist) + '</td>';
+        if (hasVersion) html += '<td>' + escapeHtml(song.version || '') + '</td>';
         if (hasAlbum) html += '<td>' + escapeHtml(song.album || '') + '</td>';
         html += '</tr>';
       });
