@@ -11,7 +11,8 @@ class MagicLinksController < ApplicationController
     new_user = false
 
     if user.nil?
-      user = User.create!(email: email, role: :audience)
+      role = %w[dj audience].include?(params[:role]) ? params[:role] : "audience"
+      user = User.create!(email: email, role: role)
       new_user = true
     end
 

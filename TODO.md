@@ -22,6 +22,10 @@ Tracked improvements, enhancements, and ideas.
 - [x] Make navbar collapse to a hamburger menu on small screens
 - [ ] Let DJ/KJ choose display label: "Catalog" or "Songbook" (per-user setting, affects all user-facing text for the DJ/KJ and their audience; internals stay "catalog")
 
+## Accounts & Roles
+
+- [ ] Differentiate DJ/KJ vs. audience accounts (currently everyone can do everything; in the future, audience members should have a distinct, lighter experience — e.g. no catalog management, just search/request)
+
 ## Infrastructure / Scaling
 
 - [ ] Shard songs app to handle Fly.io 500GB per-volume limit (one volume per instance — per-catalog SQLite DBs will eventually exceed this as user base grows)

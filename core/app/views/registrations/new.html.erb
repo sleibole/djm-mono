@@ -2,7 +2,10 @@
 
 <%= form_with url: magic_links_path do |f| %>
   <%= f.email_field :email, placeholder: "Enter your email address...", required: true, autofocus: true %>
-  <p>Enter your email to create an account.</p>
+
+  <label for="role">Are you a DJ/KJ or an audience member?</label>
+  <%= f.select :role, [["DJ / KJ", "dj"], ["Audience Member", "audience"]], { selected: "dj" }, { id: "role" } %>
+
   <%= f.submit "Let's go" %>
 <% end %>
 
