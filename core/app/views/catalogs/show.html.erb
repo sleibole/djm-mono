@@ -1,7 +1,14 @@
 <h1><%= @catalog.name %></h1>
+<p id="song-count"></p>
 
-<section>
-  <h2>Upload CSV</h2>
+<section id="search-section" hidden>
+  <h2>Search Songs</h2>
+  <input type="search" id="search-input" placeholder="Search by title, artist, or version…" autocomplete="off" autofocus>
+  <div id="search-results"></div>
+</section>
+
+<details>
+  <summary>Upload CSV</summary>
   <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
 
   <form id="csv-upload-form" enctype="multipart/form-data">
@@ -11,10 +18,9 @@
   </form>
 
   <div id="upload-feedback" role="status" hidden></div>
-</section>
+</details>
 
 <section id="catalog-status-section" hidden>
-  <h2>Catalog Status</h2>
   <div id="catalog-status"></div>
 </section>
 
@@ -22,6 +28,10 @@
 
 <script>
   (function() {
+    const searchSection = document.getElementById("search-section");
+    const searchInput = document.getElementById("search-input");
+    const searchResults = document.getElementById("search-results");
+    const songCountEl = document.getElementById("song-count");
     const form = document.getElementById("csv-upload-form");
     const btn = document.getElementById("upload-btn");
     const feedback = document.getElementById("upload-feedback");
@@ -31,6 +41,97 @@
     const token = "<%= @upload_token %>";
     const catalogId = "<%= @catalog.id %>";
     const songsAppUrl = "<%= ENV.fetch('SONGS_APP_URL') %>";
+    const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
+    const searchUrl = songsAppUrl + "/catalogs/" + catalogId + "/search";
+
+    let debounceTimer = null;
+
+    fetchStatus();
+
+    function fetchStatus() {
+      fetch(statusUrl)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === "ready") {
+            searchSection.hidden = false;
+            if (data.song_count != null) {
+              songCountEl.textContent = data.song_count.toLocaleString() + " songs";
+            }
+          } else if (data.status === "processing" || data.status === "pending") {
+            pollStatus();
+          }
+        })
+        .catch(() => {});
+    }
+
+    // --- Search ---
+
+    searchInput.addEventListener("input", function() {
+      clearTimeout(debounceTimer);
+      const query = searchInput.value.trim();
+
+      if (!query) {
+        searchResults.innerHTML = "";
+        return;
+      }
+
+      debounceTimer = setTimeout(() => performSearch(query), 300);
+    });
+
+    async function performSearch(query) {
+      searchResults.innerHTML = '<p aria-busy="true">Searching…</p>';
+
+      try {
+        const response = await fetch(searchUrl + "?q=" + encodeURIComponent(query) + "&limit=50");
+        const data = await response.json();
+
+        if (!response.ok) {
+          searchResults.innerHTML = '<p class="flash alert">' + (data.error || "Search failed.") + '</p>';
+          return;
+        }
+
+        if (data.songs.length === 0) {
+          searchResults.innerHTML = "<p>No songs found.</p>";
+          return;
+        }
+
+        renderResults(data);
+      } catch (err) {
+        searchResults.innerHTML = '<p class="flash alert">Could not reach the songs service.</p>';
+      }
+    }
+
+    function renderResults(data) {
+      const hasVersion = data.songs.some(s => s.version);
+      const hasAlbum = data.songs.some(s => s.album);
+
+      let html = '<p><small>' + data.total + ' result' + (data.total !== 1 ? 's' : '') + '</small></p>';
+      html += '<table class="striped" role="grid"><thead><tr>';
+      html += '<th>Title</th><th>Artist</th>';
+      if (hasVersion) html += '<th>Version</th>';
+      if (hasAlbum) html += '<th>Album</th>';
+      html += '</tr></thead><tbody>';
+
+      data.songs.forEach(function(song) {
+        html += '<tr>';
+        html += '<td>' + song.title_highlighted + '</td>';
+        html += '<td>' + song.artist_highlighted + '</td>';
+        if (hasVersion) html += '<td>' + (song.version_highlighted || '') + '</td>';
+        if (hasAlbum) html += '<td>' + escapeHtml(song.album || '') + '</td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      searchResults.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement("div");
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    // --- Upload ---
 
     function showFeedback(message, type) {
       feedback.hidden = false;
@@ -63,6 +164,7 @@
 
         if (response.ok) {
           showFeedback("Upload accepted. Processing your catalog…", "notice");
+          searchSection.hidden = true;
           pollStatus();
         } else {
           showFeedback(data.error || "Upload failed.", "alert");
@@ -76,11 +178,13 @@
       }
     });
 
+    // --- Status polling ---
+
     function pollStatus() {
       statusSection.hidden = false;
-      statusDiv.textContent = "Checking status…";
+      statusDiv.textContent = "Processing…";
+      statusDiv.setAttribute("aria-busy", "true");
 
-      const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
       let attempts = 0;
       const maxAttempts = 60;
 
@@ -92,10 +196,18 @@
 
           if (data.status === "ready") {
             clearInterval(interval);
+            statusDiv.removeAttribute("aria-busy");
             statusDiv.className = "flash notice";
-            statusDiv.textContent = "Catalog is ready! Version " + data.active_db_version + " is live.";
+            statusDiv.textContent = "Catalog is ready!";
+            searchSection.hidden = false;
+            searchInput.value = "";
+            searchResults.innerHTML = "";
+            if (data.song_count != null) {
+              songCountEl.textContent = data.song_count.toLocaleString() + " songs";
+            }
           } else if (data.status === "failed") {
             clearInterval(interval);
+            statusDiv.removeAttribute("aria-busy");
             statusDiv.className = "flash alert";
             let msg = "Processing failed.";
             if (data.errors && data.errors.length) {
@@ -111,6 +223,7 @@
 
         if (attempts >= maxAttempts) {
           clearInterval(interval);
+          statusDiv.removeAttribute("aria-busy");
           statusDiv.textContent = "Status check timed out. Refresh the page to check again.";
         }
       }, 2000);

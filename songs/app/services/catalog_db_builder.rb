@@ -18,12 +18,12 @@ class CatalogDbBuilder
 
     db = SQLite3::Database.new(temp_path)
     create_schema(db)
-    insert_rows(db)
+    song_count = insert_rows(db)
     create_fts_index(db)
     db.close
 
     File.rename(temp_path, final_path)
-    final_path
+    song_count
   end
 
   private
@@ -71,6 +71,7 @@ class CatalogDbBuilder
     album_idx = normalized.index("album")
     id_idx = normalized.index("id")
 
+    count = 0
     db.execute("BEGIN TRANSACTION")
 
     rows.each do |row|
@@ -85,9 +86,11 @@ class CatalogDbBuilder
           id_idx ? fields[id_idx]&.strip : nil
         ]
       )
+      count += 1
     end
 
     db.execute("COMMIT")
+    count
   end
 
   def create_fts_index(db)

@@ -20,11 +20,12 @@ class BuildCatalogJob < ApplicationJob
     new_version = record.next_version
     old_version = record.active_db_version
 
-    CatalogDbBuilder.new(record, new_version).build
+    song_count = CatalogDbBuilder.new(record, new_version).build
 
     record.update!(
       status: :ready,
       active_db_version: new_version,
+      song_count: song_count,
       error_details: nil
     )
 

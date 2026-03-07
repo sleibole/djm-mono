@@ -61,7 +61,8 @@ class CatalogsController < ApplicationController
     response = {
       catalog_id: record.catalog_id,
       status: record.status,
-      active_db_version: record.active_db_version
+      active_db_version: record.active_db_version,
+      song_count: record.song_count
     }
 
     response[:errors] = record.parsed_errors if record.failed?

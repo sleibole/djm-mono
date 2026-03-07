@@ -14,8 +14,14 @@ Tracked improvements, enhancements, and ideas.
 ## Song Search
 
 - [x] Build song search endpoint on songs app (query FTS5 catalog databases)
-- [ ] Audience-facing search UI in core app
+- [ ] Audience-facing search UI in core app (public, no login required)
+- [x] DJ-facing search + song count on catalog show page
 
 ## UI / UX
 
 - [x] Make navbar collapse to a hamburger menu on small screens
+- [ ] Let DJ/KJ choose display label: "Catalog" or "Songbook" (per-user setting, affects all user-facing text for the DJ/KJ and their audience; internals stay "catalog")
+
+## Infrastructure / Scaling
+
+- [ ] Shard songs app to handle Fly.io 500GB per-volume limit (one volume per instance — per-catalog SQLite DBs will eventually exceed this as user base grows)
