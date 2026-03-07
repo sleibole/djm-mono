@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+echo "Stopping DJMagic.io dev processes..."
+
+stopped=0
+
+for pidfile in "$ROOT_DIR"/core/tmp/pids/server.pid "$ROOT_DIR"/songs/tmp/pids/server.pid; do
+  if [ -f "$pidfile" ]; then
+    pid=$(cat "$pidfile")
+    app=$(echo "$pidfile" | grep -o 'core\|songs')
+    if kill -0 "$pid" 2>/dev/null; then
+      kill "$pid"
+      echo "  Stopped $app server (pid $pid)"
+    else
+      echo "  Removed stale $app pidfile (pid $pid not running)"
+    fi
+    rm -f "$pidfile"
+    stopped=$((stopped + 1))
+  fi
+done
+
+for port in 3000 3001; do
+  pids=$(lsof -ti:"$port" 2>/dev/null || true)
+  if [ -n "$pids" ]; then
+    echo "$pids" | xargs kill 2>/dev/null || true
+    echo "  Killed process(es) on port $port"
+    stopped=$((stopped + 1))
+  fi
+done
+
+if [ "$stopped" -eq 0 ]; then
+  echo "  No running processes found."
+fi
+
+echo "Done."

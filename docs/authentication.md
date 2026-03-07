@@ -97,6 +97,16 @@ If the user has set a password (see below), they can choose to log in with email
 
 ---
 
+## Account Locking (Password Only)
+
+- Account locks after **10 consecutive failed password attempts**
+- When locked, **password login is disabled** but **magic link login still works**
+- A successful magic link login resets the failed attempt counter and unlocks the account
+- No timed unlock — the magic link is the unlock mechanism
+- This means legitimate users are never truly locked out
+
+---
+
 ## Rate Limiting
 
 | Scope | Limit |
@@ -124,7 +134,8 @@ If the user has set a password (see below), they can choose to log in with email
 
 ## Email
 
-- **Provider:** AWS SES
+- **Production:** AWS SES
+- **Development:** [MailHog](https://github.com/mailhog/MailHog) (SMTP on `localhost:1025`, web UI on `localhost:8025`)
 - Used for: magic links, email confirmation, password reset (if password is set)
 
 ---

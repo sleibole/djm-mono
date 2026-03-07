@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
+
+echo "========================================"
+echo " DJMagic.io — Development Setup"
+echo "========================================"
+
+# --- Check prerequisites ---
+echo ""
+echo "== Checking prerequisites =="
+
+if ! command -v ruby &>/dev/null; then
+  echo "ERROR: ruby not found. Install Ruby 3.4+ first."
+  exit 1
+fi
+
+echo "  Ruby $(ruby -v | awk '{print $2}') ✓"
+
+if ! command -v bundle &>/dev/null; then
+  echo "  Installing bundler..."
+  gem install bundler
+fi
+echo "  Bundler $(bundle -v | awk '{print $3}') ✓"
+
+if ! command -v foreman &>/dev/null; then
+  echo "  Installing foreman..."
+  gem install foreman
+fi
+echo "  Foreman ✓"
+
+# --- Environment files ---
+echo ""
+echo "== Checking .env files =="
+
+for app in core songs; do
+  if [ ! -f "$app/.env" ]; then
+    echo "  Creating $app/.env with defaults..."
+    cat > "$app/.env" <<'DOTENV'
+DJM_JWT_SECRET=dev-secret-change-me-in-production
+DOTENV
+
+    if [ "$app" = "core" ]; then
+      echo "SONGS_APP_URL=http://localhost:3001" >> "$app/.env"
+    fi
+
+    if [ "$app" = "songs" ]; then
+      echo "CORE_APP_URL=http://localhost:3000" >> "$app/.env"
+    fi
+  else
+    echo "  $app/.env exists ✓"
+  fi
+done
+
+# --- Set up each app ---
+for app in core songs; do
+  echo ""
+  echo "========================================"
+  echo " Setting up $app app"
+  echo "========================================"
+
+  cd "$ROOT_DIR/$app"
+
+  echo ""
+  echo "== Installing dependencies =="
+  bundle check &>/dev/null || bundle install
+
+  echo ""
+  echo "== Preparing database =="
+  bin/rails db:prepare
+done
+
+cd "$ROOT_DIR"
+
+echo ""
+echo "========================================"
+echo " Setup complete!"
+echo "========================================"
+echo ""
+echo "Start everything with:  bin/dev"
+echo ""
+echo "  core app    → http://localhost:3000"
+echo "  songs API   → http://localhost:3001"
+echo "  MailHog UI  → http://localhost:8025  (start MailHog separately)"
+echo ""

@@ -1,0 +1,3 @@
+core: cd core && bin/rails server -p 3000
+songs: cd songs && bin/rails server -p 3001
+songs_jobs: cd songs && bin/jobs

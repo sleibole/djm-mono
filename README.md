@@ -29,9 +29,16 @@ This monorepo contains two Rails applications and shared code:
 
 ```
 djm-mono/
-├── core/          # Main Rails app (UI, Hotwire, SQLite, plain CSS)
-├── songs/         # Rails API-only app (song uploads, songs DB)
-└── shared/        # Shared utilities (JWT generation/validation)
+├── core/               # Main Rails app (UI, Hotwire, SQLite, Pico.css)
+├── songs/              # Rails API-only app (song uploads, songs DB)
+├── shared/djm_jwt/     # Shared JWT gem (used by both apps)
+├── fixtures/csvs/      # Sample CSV files for testing
+├── docs/               # Feature planning docs
+├── Procfile.dev         # Foreman process definitions
+├── bin/setup            # First-time setup (deps, DBs, .env)
+├── bin/dev              # One-command dev startup
+├── bin/stop             # Kill running dev processes
+└── bin/reset            # Destroy and recreate all databases
 ```
 
 ### Core App
@@ -52,12 +59,13 @@ djm-mono/
   - FTS5 full-text search over the catalog
   - Serving song/catalog data to the core app
 
-### Shared Directory
+### Shared (`shared/djm_jwt/`)
 
-- **Responsibilities:**
-  - JWT generation (core app issues these)
-  - JWT validation (songs app validates them)
-- **Auth flow:** When a user needs to talk to the songs app, they receive a JWT from the core app. The songs app validates the JWT before serving data.
+A Ruby gem used by both apps:
+
+- **JWT generation** — core app issues JWTs scoped to a user/catalog
+- **JWT validation** — songs app verifies JWTs before accepting requests
+- **Algorithm:** HS256 with a shared secret (`DJM_JWT_SECRET` env var)
 
 ---
 
@@ -72,38 +80,61 @@ The core app has a `Catalog` model that holds metadata about a DJ's song catalog
 1. DJ initiates an upload from the core app UI
 2. Core app issues a **JWT** scoped to the DJ/catalog
 3. DJ uploads the CSV directly to the **songs app**, presenting the JWT
-4. Songs app validates the JWT, stores the CSV in **Tigris** (S3-compatible object storage)
-5. A **background job on the songs app primary server** processes the CSV and generates a new SQLite database for that catalog
+4. Songs app validates the JWT, stores the CSV via **Active Storage** (disk in dev, Tigris/S3 in prod)
+5. A **background job** validates the CSV, builds a versioned SQLite+FTS5 database, and atomically swaps it in
 
 ### Per-Catalog SQLite Databases
 
-- **One SQLite database per catalog** — each catalog gets its own `.db` file with FTS5 indexes
+- **One SQLite database per catalog** — each catalog gets its own versioned `.db` file with FTS5 indexes
 - These databases are **artifacts generated from the CSVs**, not source-of-truth data
 - They are **not replicated via LiteFS** — only the songs app's main application database uses LiteFS
-- **On startup**, each songs app instance regenerates the per-catalog databases from the CSVs stored in Tigris
-- This keeps the architecture simple: CSVs in Tigris are the source of truth; SQLite databases are a derived, disposable cache
+- **Atomic versioning** — new DB is built as `catalog_{id}_v{version}.db`, pointer updates only when ready, old version cleaned up after
+- **On startup**, each songs app instance regenerates the per-catalog databases from CSVs in Active Storage
 
 ### Storage
 
-| What | Where | Replicated? |
-|------|-------|-------------|
-| CSVs (source of truth) | Tigris (S3-compatible) | By Tigris |
-| Per-catalog SQLite DBs | Local disk on songs instances | No — regenerated on startup |
-| Songs app application DB | SQLite via LiteFS | Yes |
-| Core app application DB | SQLite via LiteFS | Yes |
+| What | Where (dev) | Where (prod) | Replicated? |
+|------|-------------|--------------|-------------|
+| CSVs (source of truth) | Local disk (Active Storage) | Tigris (S3-compatible) | By Tigris |
+| Per-catalog SQLite DBs | Local disk on songs instance | Local disk on songs instance | No — regenerated on startup |
+| Songs app application DB | SQLite | SQLite via LiteFS | Yes (prod) |
+| Core app application DB | SQLite | SQLite via LiteFS | Yes (prod) |
+
+### Databases
+
+Each app uses multiple SQLite databases. In development these are all in the app's `storage/` directory.
+
+#### Core App (`core/storage/`)
+
+| Database | File (dev) | Purpose |
+|----------|-----------|---------|
+| **Primary** | `development.sqlite3` | Users, sessions, catalogs, queue state |
+
+Production adds `cache` and `queue` databases for Solid Cache and Solid Queue.
+
+#### Songs App (`songs/storage/`)
+
+| Database | File (dev) | Purpose |
+|----------|-----------|---------|
+| **Primary** | `development.sqlite3` | Catalog records, Active Storage metadata |
+| **Queue** | `development_queue.sqlite3` | Solid Queue (background job state) |
+| **Active Storage blobs** | `development.sqlite3` (in primary) | File attachment metadata |
+| **Per-catalog song DBs** | `catalog_{id}_v{version}.db` | FTS5-indexed song data (not managed by Rails) |
+
+The per-catalog song databases are built by background jobs from uploaded CSVs and are not part of the Rails migration lifecycle — they are generated artifacts.
 
 ---
 
 ## CSV Format Specification
 
-### Headers
+### Header Rules
 
 - CSV **must** have a header row
 - Headers are **case-insensitive** (`Title` = `title`)
 - **Trimmed of whitespace**
 - Column **order does not matter**
 
-### Headers
+### Columns
 
 ```
 title,artist,version,album,id
@@ -147,13 +178,22 @@ If either is missing → **reject the file**.
 
 ---
 
+## UI & Styling
+
+- **CSS framework:** [Pico.css](https://picocss.com/) (classless version)
+- **Custom CSS** only for app-specific UI (e.g. zebra-striped tables, queue management controls)
+- **Theme:** auto-detect from `prefers-color-scheme`, with a user-accessible light/dark toggle
+- No build step for CSS — plain CSS served directly
+
+---
+
 ## Tech Summary
 
-| Component | Framework | DB | UI / API |
-|-----------|-----------|----|---------|
-| **core** | Rails | SQLite | Hotwire + plain CSS |
-| **songs** | Rails API | SQLite | JSON API |
-| **shared** | Ruby gem or lib | — | — |
+| Component | Framework | DB | UI / API | Notes |
+|-----------|-----------|----|---------|-------|
+| **core** | Rails 8 | SQLite | Hotwire + Pico.css (classless) | Auth, queue management, UI |
+| **songs** | Rails 8 API | SQLite + FTS5 | JSON API | Active Storage, Solid Queue |
+| **shared/djm_jwt** | Ruby gem | — | — | HS256 JWT signing/verification |
 
 ---
 
@@ -161,11 +201,13 @@ If either is missing → **reject the file**.
 
 - **Platform:** [Fly.io](https://fly.io)
 - **SQLite replication:** [LiteFS](https://fly.io/docs/litefs/) for application databases only
-- **Object storage:** [Tigris](https://www.tigrisdata.com/) (S3-compatible) for CSV files
+- **Object storage:** [Tigris](https://www.tigrisdata.com/) (S3-compatible) for CSV files via Active Storage
+- **Email:** AWS SES (production), MailHog (development)
 - Each Rails app (`core`, `songs`) is deployed as a separate Fly.io app
+- **GET requests must be read-only** — LiteFS may route GETs to read replicas. All state mutation must happen via POST/PATCH/PUT/DELETE, which LiteFS forwards to the primary
 - LiteFS replicates the **application databases** (users, sessions, queue state, etc.)
-- Per-catalog song databases are **not replicated** — they are regenerated from CSVs on each instance startup
-- CSV processing (background jobs) runs on the **songs app primary server** only
+- Per-catalog song databases are **not replicated** — they are regenerated from Active Storage CSVs on each instance startup
+- CSV processing (background jobs) runs on the **songs app primary server** only via Solid Queue
 
 ### Deployment Layout
 
@@ -182,14 +224,120 @@ Fly.io
 
 ---
 
+## Development Setup
+
+### Prerequisites
+
+- Ruby 3.4+
+- [MailHog](https://github.com/mailhog/MailHog) (for dev email, SMTP on `localhost:1025`, web UI on `localhost:8025`)
+- [Foreman](https://github.com/ddollar/foreman) (`gem install foreman`)
+
+### First-time setup
+
+```bash
+# From the monorepo root — installs deps, creates/migrates DBs, sets up .env files
+bin/setup
+```
+
+This is idempotent — safe to re-run after pulling new changes to pick up new gems or migrations.
+
+### Running the app
+
+```bash
+# From the monorepo root — starts all processes
+bin/dev
+```
+
+This launches via Foreman:
+
+| Process | Port | Description |
+|---------|------|-------------|
+| **core** | 3000 | Main Rails app (UI) |
+| **songs** | 3001 | Songs API app |
+| **songs_jobs** | — | Solid Queue worker (background jobs) |
+
+### Stopping / cleaning up stale processes
+
+If servers fail to start because of stale PID files or ports still in use:
+
+```bash
+bin/stop
+```
+
+This kills any running server processes, cleans up PID files, and frees ports 3000/3001.
+
+### Starting from scratch
+
+To destroy all databases (both apps), catalog DBs, and Active Storage uploads, then recreate empty databases:
+
+```bash
+bin/reset
+```
+
+This will prompt for confirmation before proceeding.
+
+### Environment Variables
+
+Both apps use `.env` files (loaded by `dotenv-rails`):
+
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `DJM_JWT_SECRET` | core, songs | Shared secret for JWT signing (must match) |
+| `SONGS_APP_URL` | core | URL of the songs app (`http://localhost:3001` in dev) |
+| `CORE_APP_URL` | songs | URL of the core app (`http://localhost:3000` in dev) |
+
+### Test fixtures
+
+Sample CSV files for testing uploads are in `fixtures/csvs/`.
+
+---
+
+## Production Deployment
+
+### Fly.io Apps
+
+| Fly app | Source | Notes |
+|---------|--------|-------|
+| `djm-core` | `core/` | LiteFS for DB replication |
+| `djm-songs` | `songs/` | LiteFS for app DB, Active Storage → Tigris for CSVs |
+
+### Environment Variables (Production)
+
+Set on each Fly.io app via `fly secrets set`:
+
+```bash
+# Both apps
+fly secrets set DJM_JWT_SECRET=<generate-a-strong-secret>
+
+# Core app
+fly secrets set SONGS_APP_URL=https://songs.djmagic.io
+
+# Songs app
+fly secrets set CORE_APP_URL=https://djmagic.io
+```
+
+### Active Storage
+
+- **Development:** disk service (default)
+- **Production:** S3-compatible service pointing to Tigris
+
+### Key Constraints
+
+- **GET requests must be read-only** — LiteFS may route GETs to read replicas
+- **Background jobs** (CSV processing) run on the songs app **primary server** only
+- Per-catalog song DBs are **not replicated** — rebuilt from Active Storage CSVs on instance startup
+
+---
+
 ## Roadmap
 
 - [x] Define CSV format for song catalog uploads
-- [ ] Set up `core` Rails app (Hotwire, SQLite, plain CSS)
-- [ ] Set up `songs` Rails API app
-- [ ] Implement `shared` JWT generation/validation
-- [ ] Implement CSV import → SQLite + FTS5 in songs app
-- [ ] Core ↔ Songs integration (JWT auth, API calls)
+- [x] Set up `core` Rails app (Hotwire, SQLite, Pico.css)
+- [x] Set up `songs` Rails API app
+- [x] Implement `shared/djm_jwt` gem (JWT generation/validation)
+- [x] Core ↔ Songs integration (JWT auth, CORS, env-based URLs)
+- [x] Authentication (magic links, optional password, account locking)
+- [x] CSV upload flow (Active Storage, background job, FTS5, atomic versioning)
 - [ ] Queue management UI in core
 - [ ] Audience-facing search/request flow
 - [ ] KJ-specific: multiple song versions (acoustic, duet, key changes)
@@ -202,6 +350,8 @@ Fly.io
 - FTS5 provides fast full-text search over song titles, artists, etc.
 - The songs app is intentionally isolated to keep the catalog/upload logic contained and to allow for potential scaling or extraction later
 - LiteFS replicates application databases only; per-catalog song DBs are disposable artifacts
-- CSVs in Tigris are the source of truth for song data; SQLite catalog DBs are a derived cache
-- On songs app instance boot, catalog DBs are regenerated from Tigris CSVs — no replication needed
-- This means deploys and scaling are simple: spin up a new instance, it rebuilds its catalog DBs automatically
+- CSVs in Active Storage are the source of truth for song data; SQLite catalog DBs are a derived cache
+- On songs app instance boot, catalog DBs are regenerated from stored CSVs — no replication needed
+- Deploys and scaling are simple: spin up a new instance, it rebuilds its catalog DBs automatically
+- Development email is handled by MailHog (`localhost:1025` SMTP, `localhost:8025` web UI)
+- Production email uses AWS SES
