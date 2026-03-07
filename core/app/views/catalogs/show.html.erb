@@ -52,13 +52,23 @@
       fetch(statusUrl)
         .then(r => r.json())
         .then(data => {
-          if (data.status === "ready") {
+          if (data.active_db_version) {
             searchSection.hidden = false;
             if (data.song_count != null) {
               songCountEl.textContent = data.song_count.toLocaleString() + " songs";
             }
-          } else if (data.status === "processing" || data.status === "pending") {
+          }
+
+          if (data.status === "processing" || data.status === "pending") {
             pollStatus();
+          } else if (data.status === "failed") {
+            statusSection.hidden = false;
+            statusDiv.className = "flash alert";
+            let msg = "Latest upload failed.";
+            if (data.errors && data.errors.length) {
+              msg += " " + data.errors.map(e => e.detail || e).join("; ");
+            }
+            statusDiv.textContent = msg;
           }
         })
         .catch(() => {});
@@ -178,7 +188,6 @@
 
         if (response.ok) {
           showFeedback("Upload accepted. Processing your catalog…", "notice");
-          searchSection.hidden = true;
           pollStatus();
         } else {
           showFeedback(data.error || "Upload failed.", "alert");
@@ -225,11 +234,14 @@
             feedback.hidden = true;
             statusDiv.removeAttribute("aria-busy");
             statusDiv.className = "flash alert";
-            let msg = "Processing failed.";
+            let msg = data.active_db_version ? "Latest upload failed." : "Processing failed.";
             if (data.errors && data.errors.length) {
               msg += " " + data.errors.map(e => e.detail || e).join("; ");
             }
             statusDiv.textContent = msg;
+            if (data.active_db_version) {
+              searchSection.hidden = false;
+            }
           } else {
             statusDiv.textContent = "Processing… (status: " + data.status + ")";
           }
