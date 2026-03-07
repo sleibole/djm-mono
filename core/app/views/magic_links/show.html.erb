@@ -1,0 +1,13 @@
+<h1>Signing you in...</h1>
+<p>You'll be redirected automatically in a moment.</p>
+
+<%= form_with url: redeem_magic_link_path(token: @token), id: "magic-link-form" do |f| %>
+  <noscript>
+    <%= f.submit "Continue to DJMagic.io" %>
+  </noscript>
+  <p><button type="submit">Click here if you're not redirected</button></p>
+<% end %>
+
+<script>
+  document.getElementById("magic-link-form").requestSubmit();
+</script>

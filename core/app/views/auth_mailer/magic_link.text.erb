@@ -1,0 +1,9 @@
+<% if @new_user %>
+Welcome to DJMagic.io! Visit the link below to confirm your email and log in:
+<% else %>
+Visit the link below to log in to DJMagic.io:
+<% end %>
+
+<%= @magic_link_url %>
+
+This link expires in 10 minutes and can only be used once.

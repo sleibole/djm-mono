@@ -1,0 +1,119 @@
+<h1><%= @catalog.name %></h1>
+
+<section>
+  <h2>Upload CSV</h2>
+  <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
+
+  <form id="csv-upload-form" enctype="multipart/form-data">
+    <label for="csv_file">CSV File</label>
+    <input type="file" name="file" id="csv_file" accept=".csv" required>
+    <button type="submit" id="upload-btn">Upload</button>
+  </form>
+
+  <div id="upload-feedback" role="status" hidden></div>
+</section>
+
+<section id="catalog-status-section" hidden>
+  <h2>Catalog Status</h2>
+  <div id="catalog-status"></div>
+</section>
+
+<p><a href="<%= catalogs_path %>">Back to catalogs</a></p>
+
+<script>
+  (function() {
+    const form = document.getElementById("csv-upload-form");
+    const btn = document.getElementById("upload-btn");
+    const feedback = document.getElementById("upload-feedback");
+    const statusSection = document.getElementById("catalog-status-section");
+    const statusDiv = document.getElementById("catalog-status");
+    const uploadUrl = "<%= @songs_upload_url %>";
+    const token = "<%= @upload_token %>";
+    const catalogId = "<%= @catalog.id %>";
+    const songsAppUrl = "<%= ENV.fetch('SONGS_APP_URL') %>";
+
+    function showFeedback(message, type) {
+      feedback.hidden = false;
+      feedback.className = "flash " + type;
+      feedback.textContent = message;
+    }
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const fileInput = document.getElementById("csv_file");
+      if (!fileInput.files.length) return;
+
+      btn.disabled = true;
+      btn.setAttribute("aria-busy", "true");
+      btn.textContent = "Uploading…";
+      feedback.hidden = true;
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("token", token);
+
+      try {
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showFeedback("Upload accepted. Processing your catalog…", "notice");
+          pollStatus();
+        } else {
+          showFeedback(data.error || "Upload failed.", "alert");
+        }
+      } catch (err) {
+        showFeedback("Could not reach the songs service. Please try again.", "alert");
+      } finally {
+        btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+        btn.textContent = "Upload";
+      }
+    });
+
+    function pollStatus() {
+      statusSection.hidden = false;
+      statusDiv.textContent = "Checking status…";
+
+      const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
+      let attempts = 0;
+      const maxAttempts = 60;
+
+      const interval = setInterval(async function() {
+        attempts++;
+        try {
+          const response = await fetch(statusUrl);
+          const data = await response.json();
+
+          if (data.status === "ready") {
+            clearInterval(interval);
+            statusDiv.className = "flash notice";
+            statusDiv.textContent = "Catalog is ready! Version " + data.active_db_version + " is live.";
+          } else if (data.status === "failed") {
+            clearInterval(interval);
+            statusDiv.className = "flash alert";
+            let msg = "Processing failed.";
+            if (data.errors && data.errors.length) {
+              msg += " " + data.errors.join("; ");
+            }
+            statusDiv.textContent = msg;
+          } else {
+            statusDiv.textContent = "Processing… (status: " + data.status + ")";
+          }
+        } catch (err) {
+          statusDiv.textContent = "Checking status…";
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          statusDiv.textContent = "Status check timed out. Refresh the page to check again.";
+        }
+      }, 2000);
+    }
+  })();
+</script>

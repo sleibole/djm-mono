@@ -1,0 +1,9 @@
+<h1>Sign up</h1>
+
+<%= form_with url: magic_links_path do |f| %>
+  <%= f.email_field :email, placeholder: "Enter your email address...", required: true, autofocus: true %>
+  <p>Enter your email to create an account.</p>
+  <%= f.submit "Let's go" %>
+<% end %>
+
+<p>Already have an account? <a href="<%= login_path %>">Sign in</a>.</p>

@@ -1,0 +1,38 @@
+<h1>Account</h1>
+
+<section>
+  <h2>Email</h2>
+  <p><%= current_user.email %></p>
+</section>
+
+<section>
+  <h2>Password</h2>
+
+  <% if current_user.has_password? %>
+    <p>You have a password set. You can change it or remove it to use magic links only.</p>
+
+    <%= form_with url: account_password_path, method: :patch do |f| %>
+      <label for="password">New Password</label>
+      <%= f.password_field :password, id: "password", required: true, minlength: 8 %>
+
+      <label for="password_confirmation">Confirm Password</label>
+      <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
+
+      <%= f.submit "Change Password" %>
+    <% end %>
+
+    <%= button_to "Remove Password", account_password_path, method: :delete, data: { turbo_confirm: "Are you sure? You'll use magic links to log in." } %>
+  <% else %>
+    <p>No password set. You log in with magic links. You can optionally set a password.</p>
+
+    <%= form_with url: account_password_path, method: :patch do |f| %>
+      <label for="password">Password</label>
+      <%= f.password_field :password, id: "password", required: true, minlength: 8 %>
+
+      <label for="password_confirmation">Confirm Password</label>
+      <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
+
+      <%= f.submit "Set Password" %>
+    <% end %>
+  <% end %>
+</section>

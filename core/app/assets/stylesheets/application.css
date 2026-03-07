@@ -1,0 +1,21 @@
+table.striped tr:nth-child(even) {
+  background: var(--pico-table-row-stripped-background-color);
+}
+
+.flash {
+  padding: var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+}
+
+.flash.notice {
+  background: color-mix(in srgb, var(--pico-primary) 15%, transparent);
+  color: var(--pico-color);
+  border: 1px solid color-mix(in srgb, var(--pico-primary) 40%, transparent);
+}
+
+.flash.alert {
+  background: color-mix(in srgb, var(--pico-del-color) 15%, transparent);
+  color: var(--pico-color);
+  border: 1px solid color-mix(in srgb, var(--pico-del-color) 40%, transparent);
+}

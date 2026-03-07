@@ -110,7 +110,7 @@ Each app uses multiple SQLite databases. In development these are all in the app
 |----------|-----------|---------|
 | **Primary** | `development.sqlite3` | Users, sessions, catalogs, queue state |
 
-Production adds `cache` and `queue` databases for Solid Cache and Solid Queue.
+Production adds a `queue` database for Solid Queue.
 
 #### Songs App (`songs/storage/`)
 
@@ -200,6 +200,7 @@ If either is missing → **reject the file**.
 ## Hosting & Infrastructure
 
 - **Platform:** [Fly.io](https://fly.io)
+- **CDN / HTTP caching:** [Cloudflare](https://www.cloudflare.com/) — handles HTTP caching (no Solid Cache)
 - **SQLite replication:** [LiteFS](https://fly.io/docs/litefs/) for application databases only
 - **Object storage:** [Tigris](https://www.tigrisdata.com/) (S3-compatible) for CSV files via Active Storage
 - **Email:** AWS SES (production), MailHog (development)

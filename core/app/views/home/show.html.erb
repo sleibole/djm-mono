@@ -1,0 +1,12 @@
+<% if logged_in? %>
+  <hgroup>
+    <h1>DJMagic.io</h1>
+    <p>Welcome, <%= current_user.email %>!</p>
+  </hgroup>
+<% else %>
+  <hgroup>
+    <h1>DJMagic.io</h1>
+    <p>Song request management for KJs and DJs.</p>
+  </hgroup>
+  <p><a href="<%= signup_path %>" role="button">Get Started</a></p>
+<% end %>
