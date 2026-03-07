@@ -10,4 +10,4 @@ Tracked improvements, enhancements, and ideas.
 
 ## UI / UX
 
-- [ ] Make navbar collapse to a hamburger menu on small screens
+- [x] Make navbar collapse to a hamburger menu on small screens

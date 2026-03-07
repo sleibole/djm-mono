@@ -26,7 +26,10 @@
         <ul>
           <li><strong><a href="/">DJMagic.io</a></strong></li>
         </ul>
-        <ul>
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'false' ? 'true' : 'false'); document.getElementById('nav-menu').classList.toggle('open')">
+          <span class="hamburger"></span>
+        </button>
+        <ul id="nav-menu" class="nav-menu">
           <% if logged_in? %>
             <li><a href="<%= catalogs_path %>">Catalogs</a></li>
             <li><a href="<%= account_path %>">Account</a></li>
