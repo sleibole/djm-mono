@@ -1,6 +1,6 @@
 class CatalogsController < ApplicationController
   before_action :require_login
-  before_action :set_catalog, only: [:show, :upload_token]
+  before_action :set_catalog, only: [:show, :upload_token, :update]
 
   def index
     @catalogs = current_user.catalogs.order(:name)
@@ -22,6 +22,14 @@ class CatalogsController < ApplicationController
     @songs_upload_url = "#{ENV.fetch('SONGS_APP_URL')}/catalogs/#{@catalog.id}/upload"
   end
 
+  def update
+    if @catalog.update(catalog_params)
+      redirect_to @catalog, notice: "Settings saved."
+    else
+      render :show, status: :unprocessable_entity
+    end
+  end
+
   def upload_token
     token = DjmJwt::Token.generate(
       { user_id: current_user.id, catalog_id: @catalog.id },
@@ -37,6 +45,6 @@ class CatalogsController < ApplicationController
   end
 
   def catalog_params
-    params.require(:catalog).permit(:name)
+    params.require(:catalog).permit(:name, :variant_display)
   end
 end

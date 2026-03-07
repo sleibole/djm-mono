@@ -20,6 +20,19 @@
   <div id="upload-feedback" role="status" hidden></div>
 </details>
 
+<details id="settings-section">
+  <summary>Settings</summary>
+  <%= form_with model: @catalog, method: :patch do |f| %>
+    <label for="variant_display">Show selector for song variants</label>
+    <%= f.select :variant_display,
+      [["None", "none"], ["Version (Original, Acoustic, Key +2…)", "version"], ["ID (disc/track number)", "id"]],
+      { selected: @catalog.variant_display },
+      { id: "variant_display" } %>
+    <small>Controls whether singers see a dropdown to pick a specific version or disc/track ID.</small>
+    <%= f.submit "Save" %>
+  <% end %>
+</details>
+
 <section id="catalog-status-section" hidden>
   <div id="catalog-status"></div>
 </section>
@@ -44,6 +57,7 @@
     const songsAppUrl = "<%= ENV.fetch('SONGS_APP_URL') %>";
     const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
     const searchUrl = songsAppUrl + "/catalogs/" + catalogId + "/search";
+    const variantDisplay = "<%= @catalog.variant_display %>";
 
     let debounceTimer = null;
 
@@ -118,13 +132,15 @@
     }
 
     function renderResults(data) {
-      const hasVersion = data.songs.some(s => s.version);
+      const showVersionCol = variantDisplay === "version" && data.songs.some(s => s.versions && s.versions.length > 0);
+      const showIdCol = variantDisplay === "id" && data.songs.some(s => s.external_ids && s.external_ids.length > 0);
       const hasAlbum = data.songs.some(s => s.album);
 
       let html = '<p><small>' + data.total + ' result' + (data.total !== 1 ? 's' : '') + '</small></p>';
       html += '<table class="striped" role="grid"><thead><tr>';
       html += '<th>Title</th><th>Artist</th>';
-      if (hasVersion) html += '<th>Version</th>';
+      if (showVersionCol) html += '<th>Version</th>';
+      if (showIdCol) html += '<th>ID</th>';
       if (hasAlbum) html += '<th>Album</th>';
       html += '</tr></thead><tbody>';
 
@@ -132,13 +148,26 @@
         html += '<tr>';
         html += '<td>' + escapeHtml(song.title) + '</td>';
         html += '<td>' + escapeHtml(song.artist) + '</td>';
-        if (hasVersion) html += '<td>' + escapeHtml(song.version || '') + '</td>';
+        if (showVersionCol) html += '<td>' + renderVariantCell(song.versions) + '</td>';
+        if (showIdCol) html += '<td>' + renderVariantCell(song.external_ids) + '</td>';
         if (hasAlbum) html += '<td>' + escapeHtml(song.album || '') + '</td>';
         html += '</tr>';
       });
 
       html += '</tbody></table>';
       searchResults.innerHTML = html;
+    }
+
+    function renderVariantCell(items) {
+      if (!items || items.length === 0) return '';
+      if (items.length === 1) return escapeHtml(items[0]);
+
+      let html = '<select>';
+      items.forEach(function(item) {
+        html += '<option>' + escapeHtml(item) + '</option>';
+      });
+      html += '</select>';
+      return html;
     }
 
     function escapeHtml(text) {

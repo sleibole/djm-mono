@@ -1,7 +1,10 @@
 class Catalog < ApplicationRecord
+  VARIANT_DISPLAY_OPTIONS = %w[none version id].freeze
+
   belongs_to :user
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
+  validates :variant_display, inclusion: { in: VARIANT_DISPLAY_OPTIONS }
 
   def songs_app_status
     @songs_app_status

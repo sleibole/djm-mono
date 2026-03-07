@@ -17,7 +17,7 @@ class CatalogsSearchTest < ActionDispatch::IntegrationTest
     File.delete(path) if path && File.exist?(path)
   end
 
-  test "returns search results" do
+  test "returns search results with grouped fields" do
     get catalog_search_path(catalog_id: 888), params: { q: "Bohemian" }
 
     assert_response :success
@@ -26,8 +26,12 @@ class CatalogsSearchTest < ActionDispatch::IntegrationTest
     assert_equal "Bohemian", json["query"]
     assert_equal 1, json["total"]
     assert_equal 1, json["songs"].length
-    assert_equal "Bohemian Rhapsody", json["songs"].first["title"]
-    assert_includes json["songs"].first["title_highlighted"], "<mark>"
+
+    song = json["songs"].first
+    assert_equal "Bohemian Rhapsody", song["title"]
+    assert_kind_of Array, song["versions"]
+    assert_includes song["versions"], "Original"
+    assert_kind_of Array, song["external_ids"]
   end
 
   test "returns 400 when q is missing" do
@@ -76,9 +80,10 @@ class CatalogsSearchTest < ActionDispatch::IntegrationTest
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         artist TEXT NOT NULL,
-        version TEXT,
         album TEXT,
-        external_id TEXT
+        versions_json TEXT,
+        external_ids_json TEXT,
+        versions_text TEXT
       )
     SQL
 
@@ -86,7 +91,7 @@ class CatalogsSearchTest < ActionDispatch::IntegrationTest
       CREATE VIRTUAL TABLE songs_fts USING fts5(
         title,
         artist,
-        version,
+        versions_text,
         content=songs,
         content_rowid=id,
         tokenize="unicode61 remove_diacritics 2",
@@ -95,18 +100,18 @@ class CatalogsSearchTest < ActionDispatch::IntegrationTest
     SQL
 
     songs = [
-      ["Bohemian Rhapsody", "Queen", "Original"],
-      ["Sweet Caroline", "Neil Diamond", "Original"],
-      ["Don't Stop Believin'", "Journey", "Original"],
-      ["Piano Man", "Billy Joel", "Original"],
-      ["Hey Jude", "The Beatles", "Original"],
+      ["Bohemian Rhapsody", "Queen", nil, '["Original","Key +2"]', '["1001"]', "Original Key +2"],
+      ["Sweet Caroline", "Neil Diamond", nil, '["Original"]', nil, "Original"],
+      ["Don't Stop Believin'", "Journey", nil, '["Original"]', nil, "Original"],
+      ["Piano Man", "Billy Joel", nil, '["Original"]', nil, "Original"],
+      ["Hey Jude", "The Beatles", nil, '["Original"]', nil, "Original"],
     ]
 
     db.execute("BEGIN TRANSACTION")
-    songs.each do |title, artist, version|
+    songs.each do |title, artist, album, versions_json, external_ids_json, versions_text|
       db.execute(
-        "INSERT INTO songs (title, artist, version) VALUES (?, ?, ?)",
-        [title, artist, version]
+        "INSERT INTO songs (title, artist, album, versions_json, external_ids_json, versions_text) VALUES (?, ?, ?, ?, ?, ?)",
+        [title, artist, album, versions_json, external_ids_json, versions_text]
       )
     end
     db.execute("COMMIT")

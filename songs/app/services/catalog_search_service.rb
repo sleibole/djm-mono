@@ -1,13 +1,13 @@
 require "sqlite3"
+require "json"
 
 class CatalogSearchService
   DEFAULT_LIMIT = 25
   MAX_LIMIT = 100
 
-  # bm25 weights: title, artist, version (column order in songs_fts)
   TITLE_WEIGHT  = 10.0
   ARTIST_WEIGHT = 5.0
-  VERSION_WEIGHT = 1.0
+  VERSIONS_TEXT_WEIGHT = 1.0
 
   Result = Struct.new(:songs, :total, keyword_init: true)
 
@@ -72,13 +72,10 @@ class CatalogSearchService
         songs.id,
         songs.title,
         songs.artist,
-        songs.version,
         songs.album,
-        songs.external_id,
-        highlight(songs_fts, 0, '<mark>', '</mark>') AS title_highlighted,
-        highlight(songs_fts, 1, '<mark>', '</mark>') AS artist_highlighted,
-        highlight(songs_fts, 2, '<mark>', '</mark>') AS version_highlighted,
-        bm25(songs_fts, #{TITLE_WEIGHT}, #{ARTIST_WEIGHT}, #{VERSION_WEIGHT}) AS rank
+        songs.versions_json,
+        songs.external_ids_json,
+        bm25(songs_fts, #{TITLE_WEIGHT}, #{ARTIST_WEIGHT}, #{VERSIONS_TEXT_WEIGHT}) AS rank
       FROM songs_fts
       JOIN songs ON songs.id = songs_fts.rowid
       WHERE songs_fts MATCH ?
@@ -91,13 +88,17 @@ class CatalogSearchService
         id: row["id"],
         title: row["title"],
         artist: row["artist"],
-        version: row["version"],
         album: row["album"],
-        external_id: row["external_id"],
-        title_highlighted: row["title_highlighted"],
-        artist_highlighted: row["artist_highlighted"],
-        version_highlighted: row["version_highlighted"]
+        versions: parse_json_array(row["versions_json"]),
+        external_ids: parse_json_array(row["external_ids_json"])
       }
     end
+  end
+
+  def parse_json_array(json_str)
+    return [] if json_str.blank?
+    JSON.parse(json_str)
+  rescue JSON::ParserError
+    []
   end
 end
