@@ -99,7 +99,7 @@
             statusDiv.className = "flash alert";
             let msg = "Processing failed.";
             if (data.errors && data.errors.length) {
-              msg += " " + data.errors.join("; ");
+              msg += " " + data.errors.map(e => e.detail || e).join("; ");
             }
             statusDiv.textContent = msg;
           } else {
