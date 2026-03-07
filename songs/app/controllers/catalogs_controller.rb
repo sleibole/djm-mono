@@ -1,5 +1,28 @@
 class CatalogsController < ApplicationController
   before_action :authenticate_jwt!, only: :upload
+  before_action :find_ready_catalog, only: :search
+
+  def search
+    if params[:q].blank?
+      render json: { error: "Query parameter 'q' is required" }, status: :bad_request
+      return
+    end
+
+    result = CatalogSearchService.new(@catalog_record).search(
+      params[:q],
+      limit: params[:limit],
+      offset: params[:offset]
+    )
+
+    render json: {
+      catalog_id: @catalog_record.catalog_id,
+      query: params[:q],
+      total: result.total,
+      songs: result.songs
+    }
+  rescue => e
+    render json: { error: "Search failed: #{e.message}" }, status: :internal_server_error
+  end
 
   def upload
     catalog_id = jwt_payload["catalog_id"]
@@ -44,5 +67,17 @@ class CatalogsController < ApplicationController
     response[:errors] = record.parsed_errors if record.failed?
 
     render json: response
+  end
+
+  private
+
+  def find_ready_catalog
+    @catalog_record = CatalogRecord.find_by(catalog_id: params[:catalog_id])
+
+    if @catalog_record.nil?
+      render json: { error: "Catalog not found" }, status: :not_found
+    elsif !@catalog_record.ready?
+      render json: { error: "Catalog is not ready for search", status: @catalog_record.status }, status: :unprocessable_entity
+    end
   end
 end

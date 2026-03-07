@@ -54,7 +54,9 @@ class CatalogDbBuilder
         artist,
         version,
         content=songs,
-        content_rowid=id
+        content_rowid=id,
+        tokenize="unicode61 remove_diacritics 2",
+        prefix='2 3'
       )
     SQL
   end

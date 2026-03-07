@@ -6,4 +6,5 @@ Rails.application.routes.draw do
 
   post "catalogs/:catalog_id/upload", to: "catalogs#upload", as: :catalog_upload
   get  "catalogs/:catalog_id/status", to: "catalogs#status", as: :catalog_status
+  get  "catalogs/:catalog_id/search", to: "catalogs#search", as: :catalog_search
 end

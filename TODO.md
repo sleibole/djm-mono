@@ -13,7 +13,7 @@ Tracked improvements, enhancements, and ideas.
 
 ## Song Search
 
-- [ ] Build song search endpoint on songs app (query FTS5 catalog databases)
+- [x] Build song search endpoint on songs app (query FTS5 catalog databases)
 - [ ] Audience-facing search UI in core app
 
 ## UI / UX
