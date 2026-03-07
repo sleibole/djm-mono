@@ -339,8 +339,14 @@ fly secrets set CORE_APP_URL=https://djmagic.io
 - [x] Core ↔ Songs integration (JWT auth, CORS, env-based URLs)
 - [x] Authentication (magic links, optional password, account locking)
 - [x] CSV upload flow (Active Storage, background job, FTS5, atomic versioning)
-- [ ] Queue management UI in core
-- [ ] Audience-facing search/request flow
+- [x] Song search endpoint (FTS5, bm25 ranking, prefix matching, diacritics support)
+- [ ] Queue management (rotation styles, singer groups, fairness enforcement)
+- [ ] Audience experience (QR code entry, search, song requests)
+- [ ] Singer view (live queue position, estimated wait time)
+- [ ] Live notifications (Web Push "you're up next" / "you're up!" alerts)
+- [ ] Manual song entry (for KJs using streaming services)
+- [ ] Song suggestions (singers suggest songs to add to the catalog)
+- [ ] Request history (per-show and cross-show)
 - [ ] KJ-specific: multiple song versions (acoustic, duet, key changes)
 
 ---

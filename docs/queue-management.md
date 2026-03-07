@@ -65,6 +65,69 @@ Singers can be organized into groups (e.g. a table of friends, a party, a couple
 
 ---
 
+## Fairness Enforcement
+
+Both rotation styles enforce fairness automatically:
+
+- **No repeats** — a singer can't sing again until the rotation cycles through everyone (Standard Rotation) or until they rejoin at the back (Traditional Queue)
+- **No line-cutting** — position is determined by arrival order; no way to jump ahead
+- **KJ overrides** — the KJ can still manually adjust (bump someone up, skip, remove) when needed, but the default behavior keeps things fair without intervention
+
+---
+
+## Live Notifications
+
+Push-style alerts keep singers informed without them staring at their phone or pestering the KJ.
+
+**Notification triggers:**
+
+| Trigger | Message | Purpose |
+|---------|---------|---------|
+| On-deck | "You're up next!" | Give the singer time to get ready |
+| Their turn | "You're up!" | It's time to sing |
+
+**Implementation options:**
+
+- **Web Push API** — works without an app install, but requires notification permission from the singer
+- **In-page alerts** — fallback for singers who decline push permissions; audio cue + visual update on the singer view page
+- **Singer view page** updates live regardless of push permission (via WebSocket or polling)
+
+**Design goals:**
+
+- Reduce no-shows (singer wandered off, didn't hear their name)
+- Reduce KJ stress (no more shouting names across the room)
+- Permission prompt should explain the benefit clearly, not be aggressive
+
+---
+
+## Request History
+
+### For Singers
+
+- Songs they've sung during the current show (title, artist, time)
+- Available on their singer view page
+- Optional account unlocks cross-show history ("songs I've sung")
+
+### For KJs
+
+- Full show history: who sang what, when, in what order
+- Useful for tracking regulars, avoiding repeats across shows, and post-show review
+- Persisted for long-term analytics
+
+---
+
+## Song Suggestions
+
+Singers can suggest songs that aren't in the KJ's catalog. This is distinct from song requests — a suggestion is "please add this to your catalog for next time," not "play this tonight."
+
+- Singer searches the catalog, doesn't find their song
+- Option to "Suggest this song" with title and artist
+- KJ sees suggestions in a separate list (not in the queue)
+- KJ can optionally add suggested songs to their catalog for future shows
+- Helps KJs grow their catalog based on actual demand
+
+---
+
 ## Design Decisions
 
 - [ ] Which rotation styles do we support at launch? (Both? Start with one?)
@@ -72,6 +135,8 @@ Singers can be organized into groups (e.g. a table of friends, a party, a couple
 - [ ] Can a KJ switch rotation style mid-show?
 - [ ] How do we communicate expected wait time to singers?
 - [ ] How does the UI differ between rotation styles (if at all)?
+- [ ] What's the notification permission UX? When do we prompt?
+- [ ] Do we store song suggestions per-catalog or per-show?
 
 ---
 
@@ -82,3 +147,6 @@ Singers can be organized into groups (e.g. a table of friends, a party, a couple
 - [ ] Singer history (who sang what, when)
 - [ ] KJ manual overrides (bump someone up, skip, remove)
 - [ ] Audience-facing queue position / wait estimate
+- [ ] Live notifications (Web Push API + in-page fallback)
+- [ ] Song suggestions list for KJs
+- [ ] Manual song entry (for KJs without a catalog / streaming service users)

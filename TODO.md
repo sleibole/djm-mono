@@ -17,6 +17,24 @@ Tracked improvements, enhancements, and ideas.
 - [ ] Audience-facing search UI in core app (public, no login required)
 - [x] DJ-facing search + song count on catalog show page
 
+## Audience Experience
+
+- [ ] QR code entry — generate per-show QR codes that link to the KJ's catalog page (no app, no account)
+- [ ] Singer view — personal "where am I in line?" page with live position updates
+- [ ] Manual song entry — singers can type any song title (for KJs using streaming services or missing catalog entries)
+- [ ] Song suggestions — singers can suggest songs not in the catalog for the KJ to add later
+- [ ] Live notifications — "You're up next!" and "You're up!" push alerts via Web Push API (with in-page fallback)
+- [ ] Request history — singers see what they've sung tonight; KJs see full show history
+
+## Queue Management
+
+- [ ] Queue CRUD (add, remove, reorder)
+- [ ] Rotation styles (standard rotation, traditional queue)
+- [ ] "Now playing" state
+- [ ] KJ manual overrides (bump, skip, remove)
+- [ ] Singer groups (keep friends contiguous in the queue)
+- [ ] Fairness enforcement (no repeats, no line-cutting)
+
 ## UI / UX
 
 - [x] Make navbar collapse to a hamburger menu on small screens
