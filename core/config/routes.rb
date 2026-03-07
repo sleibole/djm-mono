@@ -10,7 +10,9 @@ Rails.application.routes.draw do
   get  "auth/magic/:token", to: "magic_links#show", as: :auth_magic_link
   post "auth/magic/:token", to: "magic_links#redeem", as: :redeem_magic_link
 
-  resources :catalogs, only: [ :index, :new, :create, :show ]
+  resources :catalogs, only: [ :index, :new, :create, :show ] do
+    post :upload_token, on: :member
+  end
 
   get "docs/:slug", to: "docs#show", as: :doc
 

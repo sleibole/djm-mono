@@ -38,7 +38,7 @@
     const statusSection = document.getElementById("catalog-status-section");
     const statusDiv = document.getElementById("catalog-status");
     const uploadUrl = "<%= @songs_upload_url %>";
-    const token = "<%= @upload_token %>";
+    const tokenUrl = "<%= upload_token_catalog_path(@catalog) %>";
     const catalogId = "<%= @catalog.id %>";
     const songsAppUrl = "<%= ENV.fetch('SONGS_APP_URL') %>";
     const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
@@ -150,11 +150,25 @@
       btn.textContent = "Uploading…";
       feedback.hidden = true;
 
-      const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-      formData.append("token", token);
-
       try {
+        const tokenResponse = await fetch(tokenUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+          }
+        });
+
+        if (!tokenResponse.ok) {
+          showFeedback("Could not get upload authorization. Please refresh and try again.", "alert");
+          return;
+        }
+
+        const { token } = await tokenResponse.json();
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        formData.append("token", token);
+
         const response = await fetch(uploadUrl, {
           method: "POST",
           body: formData
@@ -196,6 +210,7 @@
 
           if (data.status === "ready") {
             clearInterval(interval);
+            feedback.hidden = true;
             statusDiv.removeAttribute("aria-busy");
             statusDiv.className = "flash notice";
             statusDiv.textContent = "Catalog is ready!";
@@ -207,6 +222,7 @@
             }
           } else if (data.status === "failed") {
             clearInterval(interval);
+            feedback.hidden = true;
             statusDiv.removeAttribute("aria-busy");
             statusDiv.className = "flash alert";
             let msg = "Processing failed.";
