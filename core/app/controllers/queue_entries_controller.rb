@@ -1,8 +1,8 @@
 class QueueEntriesController < ApplicationController
   before_action :require_login
   before_action :set_show
-  before_action :require_active_show, only: [ :create, :move, :now_playing, :skip ]
-  before_action :set_queue_entry, only: [ :destroy, :move, :now_playing, :mark_done, :skip ]
+  before_action :require_active_show, only: [ :create, :move, :now_playing, :skip, :approve, :reject ]
+  before_action :set_queue_entry, only: [ :destroy, :move, :now_playing, :mark_done, :skip, :approve, :reject ]
 
   def create
     participant = find_or_create_participant
@@ -68,6 +68,16 @@ class QueueEntriesController < ApplicationController
   def skip
     @entry.skip!
     redirect_to @show
+  end
+
+  def approve
+    @entry.approve!
+    redirect_to @show, notice: "#{@entry.participant.name} approved and added to queue."
+  end
+
+  def reject
+    @entry.reject!
+    redirect_to @show, notice: "Request from #{@entry.participant.name} rejected."
   end
 
   private

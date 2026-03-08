@@ -1,0 +1,194 @@
+<% content_for(:title) { "#{@show.catalog.name} | #{@dj.email} | DJMagic.io" } %>
+
+<hgroup>
+  <h1><%= @show.catalog.name %></h1>
+  <p>
+    <% if @show.active? %>
+      <mark><%= @show.show_type.capitalize %></mark> &mdash; Live now
+    <% else %>
+      This show has ended.
+    <% end %>
+  </p>
+</hgroup>
+
+<% if @show.active? %>
+  <%# --- Song Search --- %>
+  <section id="song-search-section">
+    <label for="audience-search-input"><strong>Find a song</strong></label>
+    <input type="search" id="audience-search-input" placeholder="Search by title or artist…" autocomplete="off" autofocus>
+    <div id="audience-search-results"></div>
+    <div id="audience-load-more" hidden>
+      <button type="button" class="outline secondary" onclick="loadMore()">Load more results</button>
+    </div>
+  </section>
+
+  <%# --- Request Form --- %>
+  <section id="request-form-section" hidden>
+    <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-request-form" do %>
+      <article id="selected-song-display">
+        <p>
+          <strong id="audience-selected-title"></strong> &mdash; <span id="audience-selected-artist"></span>
+          <span id="audience-selected-version"></span>
+        </p>
+        <button type="button" class="outline secondary" onclick="clearSelection()">Change song</button>
+      </article>
+
+      <input type="hidden" name="song_title" id="audience-hidden-title">
+      <input type="hidden" name="song_artist" id="audience-hidden-artist">
+      <input type="hidden" name="song_version" id="audience-hidden-version">
+      <input type="hidden" name="song_external_id" id="audience-hidden-external-id">
+
+      <label for="participant_name">Your name</label>
+      <input type="text" name="participant_name" id="participant_name"
+             placeholder="e.g. Mike S."
+             value="<%= @participant_name %>"
+             required autocomplete="off">
+      <small>Add a last initial if it's a common name so the host can tell you apart.</small>
+
+      <button type="submit" id="audience-submit-btn">Submit Request</button>
+    <% end %>
+  </section>
+
+  <% if @show.manual_entry_enabled? %>
+    <%# --- Manual Entry --- %>
+    <section id="manual-entry-section">
+      <details>
+        <summary>Can't find your song?</summary>
+        <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-manual-form" do %>
+          <label for="manual-title">Song title</label>
+          <input type="text" name="song_title" id="manual-title" placeholder="Song title" required>
+
+          <label for="manual-artist">Artist</label>
+          <input type="text" name="song_artist" id="manual-artist" placeholder="Artist (optional)">
+
+          <label for="manual-participant-name">Your name</label>
+          <input type="text" name="participant_name" id="manual-participant-name"
+                 placeholder="e.g. Mike S."
+                 value="<%= @participant_name %>"
+                 required autocomplete="off">
+
+          <button type="submit">Submit Manual Request</button>
+        <% end %>
+      </details>
+    </section>
+  <% end %>
+<% else %>
+  <section>
+    <p>This show has ended and is no longer accepting requests.</p>
+    <p><a href="<%= dj_profile_path(handle: @dj.slug) %>">See other shows</a></p>
+  </section>
+<% end %>
+
+<p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.email %></a></p>
+
+<% if @show.active? %>
+<script>
+  (function() {
+    var searchUrl = "<%= @songs_app_url %>/catalogs/<%= @show.catalog_id %>/search";
+    var searchInput = document.getElementById("audience-search-input");
+    var searchResults = document.getElementById("audience-search-results");
+    var loadMoreBtn = document.getElementById("audience-load-more");
+    var requestSection = document.getElementById("request-form-section");
+    var searchSection = document.getElementById("song-search-section");
+
+    var searchTimer = null;
+    var currentOffset = 0;
+    var currentQuery = "";
+    var pageSize = 25;
+
+    searchInput.addEventListener("input", function() {
+      clearTimeout(searchTimer);
+      var q = searchInput.value.trim();
+      if (!q) {
+        searchResults.innerHTML = "";
+        loadMoreBtn.hidden = true;
+        return;
+      }
+
+      searchTimer = setTimeout(function() {
+        currentQuery = q;
+        currentOffset = 0;
+        performSearch(q, 0, false);
+      }, 300);
+    });
+
+    function performSearch(query, offset, append) {
+      fetch(searchUrl + "?q=" + encodeURIComponent(query) + "&limit=" + pageSize + "&offset=" + offset)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!append) searchResults.innerHTML = "";
+
+          if (data.songs.length === 0 && !append) {
+            searchResults.innerHTML = "<p><small>No songs found.</small></p>";
+            loadMoreBtn.hidden = true;
+            return;
+          }
+
+          var html = append ? "" : '<table class="striped" role="grid"><tbody>';
+          data.songs.forEach(function(song) {
+            html += '<tr style="cursor:pointer" onclick=\'selectSong(' + JSON.stringify(song).replace(/'/g, "&#39;") + '\'>';
+            html += '<td>' + escapeHtml(song.title) + '</td>';
+            html += '<td>' + escapeHtml(song.artist) + '</td>';
+            if (song.version) html += '<td><small>' + escapeHtml(song.version) + '</small></td>';
+            html += '</tr>';
+          });
+
+          if (append) {
+            var tbody = searchResults.querySelector("tbody");
+            if (tbody) tbody.insertAdjacentHTML("beforeend", html);
+          } else {
+            html += '</tbody></table>';
+            searchResults.innerHTML = html;
+          }
+
+          currentOffset = offset + data.songs.length;
+          loadMoreBtn.hidden = (data.songs.length < pageSize);
+        })
+        .catch(function() {
+          if (!append) searchResults.innerHTML = '<p><small>Search unavailable. Please try again.</small></p>';
+          loadMoreBtn.hidden = true;
+        });
+    }
+
+    window.loadMore = function() {
+      if (currentQuery) performSearch(currentQuery, currentOffset, true);
+    };
+
+    window.selectSong = function(song) {
+      document.getElementById("audience-hidden-title").value = song.title;
+      document.getElementById("audience-hidden-artist").value = song.artist || "";
+      document.getElementById("audience-hidden-version").value = song.version || "";
+      document.getElementById("audience-hidden-external-id").value = song.external_id || "";
+
+      document.getElementById("audience-selected-title").textContent = song.title;
+      document.getElementById("audience-selected-artist").textContent = song.artist;
+      var versionSpan = document.getElementById("audience-selected-version");
+      versionSpan.textContent = song.version ? "(" + song.version + ")" : "";
+
+      searchSection.hidden = true;
+      requestSection.hidden = false;
+      document.getElementById("participant_name").focus();
+    };
+
+    window.clearSelection = function() {
+      document.getElementById("audience-hidden-title").value = "";
+      document.getElementById("audience-hidden-artist").value = "";
+      document.getElementById("audience-hidden-version").value = "";
+      document.getElementById("audience-hidden-external-id").value = "";
+
+      requestSection.hidden = true;
+      searchSection.hidden = false;
+      searchInput.value = "";
+      searchResults.innerHTML = "";
+      loadMoreBtn.hidden = true;
+      searchInput.focus();
+    };
+
+    function escapeHtml(text) {
+      var d = document.createElement("div");
+      d.textContent = text;
+      return d.innerHTML;
+    }
+  })();
+</script>
+<% end %>

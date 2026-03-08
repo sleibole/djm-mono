@@ -9,7 +9,85 @@
   </p>
 </header>
 
+<% if @show.active? && current_user.slug.present? %>
+  <%# --- Share / QR Codes --- %>
+  <section id="share-section">
+    <details>
+      <summary>Share with your audience</summary>
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div>
+          <h4>This Show</h4>
+          <%= raw RQRCode::QRCode.new(@show.public_url).as_svg(
+            module_size: 4,
+            standalone: true,
+            use_path: true,
+            viewbox: true,
+            svg_attributes: { style: "max-width: 200px; width: 100%;" }
+          ) %>
+          <p><small><code id="show-url"><%= @show.public_url %></code></small></p>
+          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('show-url').textContent)">Copy show link</button>
+        </div>
+        <div>
+          <h4>Your Profile</h4>
+          <%= raw RQRCode::QRCode.new(@show.dj_profile_url).as_svg(
+            module_size: 4,
+            standalone: true,
+            use_path: true,
+            viewbox: true,
+            svg_attributes: { style: "max-width: 200px; width: 100%;" }
+          ) %>
+          <p><small><code id="profile-url"><%= @show.dj_profile_url %></code></small></p>
+          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('profile-url').textContent)">Copy profile link</button>
+        </div>
+      </div>
+    </details>
+  </section>
+<% elsif @show.active? && current_user.slug.blank? %>
+  <section>
+    <p>
+      <a href="<%= account_path %>">Set your handle</a> to share a QR code and public link with your audience.
+    </p>
+  </section>
+<% end %>
+
 <% if @show.active? %>
+  <%# --- Pending Requests --- %>
+  <% if @show.approval_required? && @pending.any? %>
+    <section id="pending-requests">
+      <h2>Pending Requests <small>(<%= @pending.count %>)</small></h2>
+      <table class="striped" role="grid">
+        <thead>
+          <tr>
+            <th><%= @show.participant_label %></th>
+            <th>Song</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @pending.each do |entry| %>
+            <tr>
+              <td><%= entry.participant.name %></td>
+              <td>
+                <%= entry.song_title %> &mdash; <%= entry.song_artist %>
+                <% if entry.song_version.present? %>
+                  <br><small><%= entry.song_version %></small>
+                <% end %>
+              </td>
+              <td><small><%= entry.created_at.strftime("%l:%M %p") %></small></td>
+              <td>
+                <div role="group">
+                  <%= button_to "Approve", approve_show_queue_entry_path(@show, entry), method: :patch %>
+                  <%= button_to "Reject", reject_show_queue_entry_path(@show, entry), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "Reject request from #{entry.participant.name}?" } %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+
   <%# --- Now Playing --- %>
   <section id="now-playing">
     <h2>Now Playing</h2>
@@ -169,6 +247,28 @@
       <label for="show_max_songs_per_singer">Max Songs per <%= @show.participant_label %></label>
       <%= f.number_field :max_songs_per_singer, min: 1, placeholder: "Unlimited" %>
       <small>Leave blank for unlimited.</small>
+
+      <hr>
+
+      <h4>Audience Settings</h4>
+
+      <label>
+        <%= f.check_box :approval_required %>
+        Require approval for audience requests
+      </label>
+      <small>When enabled, audience song requests must be approved before entering the queue.</small>
+
+      <label>
+        <%= f.check_box :manual_entry_enabled %>
+        Allow manual song entry
+      </label>
+      <small>Let audience members request songs not in your catalog.</small>
+
+      <label for="show_slug">Show URL slug</label>
+      <%= f.text_field :slug, placeholder: "e.g. tuesday-karaoke" %>
+      <% if current_user.slug.present? %>
+        <small>Public URL: djmagic.io/dj/<%= current_user.slug %>/shows/<%= @show.slug %></small>
+      <% end %>
 
       <%= f.submit "Save Settings", class: "secondary" %>
     <% end %>

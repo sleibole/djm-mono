@@ -1,5 +1,5 @@
 class QueueEntry < ApplicationRecord
-  STATUSES = %w[waiting up_next now_playing done skipped].freeze
+  STATUSES = %w[pending waiting up_next now_playing done skipped rejected].freeze
 
   belongs_to :show
   belongs_to :participant
@@ -9,6 +9,7 @@ class QueueEntry < ApplicationRecord
   validates :position, presence: true
   validates :status, inclusion: { in: STATUSES }
 
+  scope :pending, -> { where(status: "pending") }
   scope :active, -> { where(status: %w[waiting up_next]) }
   scope :completed, -> { where(status: %w[done skipped]) }
 
@@ -31,5 +32,17 @@ class QueueEntry < ApplicationRecord
 
   def skip!
     update!(status: "skipped")
+  end
+
+  def pending?
+    status == "pending"
+  end
+
+  def approve!
+    update!(status: "waiting", position: show.next_position)
+  end
+
+  def reject!
+    update!(status: "rejected")
   end
 end

@@ -11,6 +11,12 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 8 }, allow_nil: true
+  validates :slug, uniqueness: true, allow_nil: true,
+                   length: { minimum: 3, maximum: 30 },
+                   format: { with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?\z/,
+                             message: "must be lowercase letters, numbers, and hyphens (can't start or end with a hyphen)" }
+
+  normalizes :slug, with: ->(slug) { slug.strip.downcase }
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
@@ -47,5 +53,22 @@ class User < ApplicationRecord
 
   def has_password?
     password_digest.present?
+  end
+
+  def ensure_slug!
+    return slug if slug.present?
+
+    base = email.split("@").first.parameterize.first(20)
+    base = "dj-#{SecureRandom.alphanumeric(4).downcase}" if base.length < 3
+
+    candidate = base
+    counter = 1
+    while User.exists?(slug: candidate)
+      candidate = "#{base}-#{counter}"
+      counter += 1
+    end
+
+    update!(slug: candidate)
+    candidate
   end
 end

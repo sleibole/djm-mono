@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_145945) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_08_203125) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -63,17 +63,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_145945) do
   end
 
   create_table "shows", force: :cascade do |t|
+    t.boolean "approval_required", default: true, null: false
     t.integer "catalog_id", null: false
     t.datetime "created_at", null: false
     t.datetime "ended_at"
+    t.boolean "manual_entry_enabled", default: false, null: false
     t.integer "max_songs_per_singer"
     t.string "rotation_style", default: "standard", null: false
     t.string "show_type", default: "karaoke", null: false
+    t.string "slug"
     t.datetime "started_at", null: false
     t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["catalog_id"], name: "index_shows_on_catalog_id"
+    t.index ["user_id", "slug"], name: "index_shows_on_user_id_and_slug", unique: true
     t.index ["user_id", "status"], name: "index_shows_on_user_id_and_status"
     t.index ["user_id"], name: "index_shows_on_user_id"
   end
@@ -89,8 +93,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_145945) do
     t.datetime "locked_at"
     t.string "password_digest"
     t.integer "role", default: 0, null: false
+    t.string "slug"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
   add_foreign_key "catalogs", "users"

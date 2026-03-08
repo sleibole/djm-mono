@@ -20,6 +20,24 @@
 </section>
 
 <section>
+  <h2>Your Handle</h2>
+  <% if current_user.slug.present? %>
+    <p>Your public URL: <strong>djmagic.io/dj/<%= current_user.slug %></strong></p>
+  <% else %>
+    <p>Set a handle to get a public profile page and shareable links for your shows.</p>
+  <% end %>
+
+  <%= form_with url: account_slug_path, method: :patch do |f| %>
+    <label for="slug">Handle</label>
+    <input type="text" name="slug" id="slug" value="<%= current_user.slug %>"
+           placeholder="e.g. djmike" required minlength="3" maxlength="30"
+           pattern="[a-z0-9][a-z0-9\-]*[a-z0-9]">
+    <small>Lowercase letters, numbers, and hyphens. 3&ndash;30 characters.</small>
+    <%= f.submit "Save Handle", class: "secondary" %>
+  <% end %>
+</section>
+
+<section>
   <h2>Email</h2>
   <p><%= current_user.email %></p>
 </section>

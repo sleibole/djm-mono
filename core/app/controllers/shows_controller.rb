@@ -13,6 +13,8 @@ class ShowsController < ApplicationController
 
   def create
     catalog = current_user.catalogs.find(params[:catalog_id])
+    current_user.ensure_slug!
+
     @show = current_user.shows.build(
       catalog: catalog,
       show_type: params[:show_type].presence || current_user.default_show_type,
@@ -34,6 +36,7 @@ class ShowsController < ApplicationController
     @queue_entries = @show.queue_entries.includes(:participant)
     @now_playing = @show.now_playing_entry
     @waiting = @show.waiting_entries.includes(:participant)
+    @pending = @show.pending_entries.includes(:participant)
     @completed = @show.queue_entries.completed.includes(:participant).order(performed_at: :desc)
     @songs_app_url = ENV.fetch("SONGS_APP_URL")
   end
@@ -58,6 +61,6 @@ class ShowsController < ApplicationController
   end
 
   def show_params
-    params.require(:show).permit(:show_type, :rotation_style, :max_songs_per_singer)
+    params.require(:show).permit(:show_type, :rotation_style, :max_songs_per_singer, :approval_required, :manual_entry_enabled, :slug)
   end
 end

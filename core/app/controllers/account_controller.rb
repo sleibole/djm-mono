@@ -21,4 +21,12 @@ class AccountController < ApplicationController
     current_user.update_columns(password_digest: nil)
     redirect_to account_path, notice: "Password removed. You'll use magic links to log in."
   end
+
+  def update_slug
+    if current_user.update(slug: params[:slug])
+      redirect_to account_path, notice: "Handle updated."
+    else
+      redirect_to account_path, alert: current_user.errors.full_messages.to_sentence
+    end
+  end
 end

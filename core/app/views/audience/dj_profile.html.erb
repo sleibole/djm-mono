@@ -1,0 +1,26 @@
+<% content_for(:title) { "#{@dj.email} | DJMagic.io" } %>
+
+<hgroup>
+  <h1><%= @dj.email %></h1>
+  <p>on DJMagic.io</p>
+</hgroup>
+
+<% if @active_shows.any? %>
+  <section>
+    <h2>Live Now</h2>
+    <% @active_shows.each do |show| %>
+      <article>
+        <h3><a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>"><%= show.catalog.name %></a></h3>
+        <p>
+          <mark><%= show.show_type.capitalize %></mark>
+          &mdash; Started <%= show.started_at.strftime("%l:%M %p") %>
+        </p>
+        <a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>" role="button">Browse Songs &amp; Request</a>
+      </article>
+    <% end %>
+  </section>
+<% else %>
+  <section>
+    <p>No live shows right now. Check back later!</p>
+  </section>
+<% end %>

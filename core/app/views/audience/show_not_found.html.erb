@@ -1,0 +1,8 @@
+<% content_for(:title) { "Show Not Found | DJMagic.io" } %>
+
+<hgroup>
+  <h1>Show Not Found</h1>
+  <p>This show doesn't exist or may have been removed.</p>
+</hgroup>
+
+<p><a href="<%= dj_profile_path(handle: @dj.slug) %>">See <%= @dj.email %>'s active shows</a></p>

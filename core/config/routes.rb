@@ -22,17 +22,26 @@ Rails.application.routes.draw do
         patch :now_playing
         patch :mark_done
         patch :skip
+        patch :approve
+        patch :reject
       end
     end
   end
 
   get "participants/autocomplete", to: "participants#autocomplete"
 
+  scope "dj/:handle", controller: :audience do
+    get  "/",                          action: :dj_profile,     as: :dj_profile
+    get  "shows/:show_slug",           action: :show,           as: :audience_show
+    post "shows/:show_slug/requests",  action: :create_request, as: :audience_request
+  end
+
   get "docs/:slug", to: "docs#show", as: :doc
 
   get   "account", to: "account#show", as: :account
   patch "account/password", to: "account#update_password", as: :account_password
   delete "account/password", to: "account#remove_password"
+  patch "account/slug", to: "account#update_slug", as: :account_slug
 
   root "home#show"
 end
