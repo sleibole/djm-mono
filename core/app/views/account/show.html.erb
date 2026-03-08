@@ -1,5 +1,24 @@
 <h1>Account</h1>
 
+<section data-controller="theme">
+  <h2>Appearance</h2>
+  <p><small>This setting is saved to this device only and won't sync across your other devices. By default, we match your operating system's light or dark mode preference.</small></p>
+  <fieldset>
+    <label>
+      <input type="radio" name="theme" data-action="change->theme#setSystem" data-theme-target="systemRadio">
+      System default
+    </label>
+    <label>
+      <input type="radio" name="theme" data-action="change->theme#setLight" data-theme-target="lightRadio">
+      Light
+    </label>
+    <label>
+      <input type="radio" name="theme" data-action="change->theme#setDark" data-theme-target="darkRadio">
+      Dark
+    </label>
+  </fieldset>
+</section>
+
 <section>
   <h2>Email</h2>
   <p><%= current_user.email %></p>
