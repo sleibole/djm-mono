@@ -3,6 +3,8 @@ class User < ApplicationRecord
 
   has_many :magic_tokens, dependent: :delete_all
   has_many :catalogs, dependent: :destroy
+  has_many :shows, dependent: :destroy
+  has_many :participants, foreign_key: :dj_id, dependent: :destroy
 
   enum :role, { audience: 0, dj: 1, admin: 2 }
 

@@ -161,10 +161,12 @@ Optional account (via magic link) unlocks:
 
 ## Design Decisions
 
-- [ ] How do we identify a singer across requests within a show? (Session cookie? Name they enter?)
-- [ ] Do we require a name for each request, or once per show?
+- [x] How do we identify a singer across requests within a show? **Lightweight Singer record in DB (name + optional account link). KJ manages singers for now; audience self-service comes later.**
+- [x] Do we require a name for each request, or once per show? **KJ can pick from existing singers (autocomplete from current/past shows) or type a new name.**
 - [ ] How do we handle duplicate names? (Two "Mike"s in the queue)
-- [ ] Can a singer have multiple songs in the queue at once?
+- [x] Can a singer have multiple songs in the queue at once? **KJ-configurable setting (max_songs_per_singer on the show).**
 - [ ] How does the KJ enable/disable manual song entry?
 - [ ] How does the KJ enable/disable song suggestions?
 - [ ] What's the notification permission UX? When do we prompt?
+- [x] Singer records auto-delete after ~2 weeks of inactivity (unless linked to a User account).
+- [x] Song history is tracked per DJ (via QueueEntry → Show → User/DJ relationship).

@@ -28,12 +28,20 @@ Tracked improvements, enhancements, and ideas.
 
 ## Queue Management
 
-- [ ] Queue CRUD (add, remove, reorder)
-- [ ] Rotation styles (standard rotation, traditional queue)
-- [ ] "Now playing" state
-- [ ] KJ manual overrides (bump, skip, remove)
-- [ ] Singer groups (keep friends contiguous in the queue)
+- [x] Show model (KJ starts/ends shows, queue belongs to a show)
+- [x] Show type (karaoke/dj) with contextual display labels ("Singer" vs "Guest"/"Requester")
+- [x] Participant model (per-DJ, lightweight temporary records, optional account linking)
+- [x] Queue CRUD (add, remove, reorder)
+- [x] Standard rotation (new participants go to bottom, KJ works top to bottom)
+- [x] "Now playing" state
+- [x] KJ manual overrides (bump, skip, remove)
+- [x] Add to queue via catalog search OR manual song entry
+- [x] Participant autocomplete (from DJ's previous shows)
+- [x] Max songs per participant (KJ-configurable per show)
+- [ ] Traditional queue rotation style
+- [ ] Participant groups (keep friends contiguous in the queue)
 - [ ] Fairness enforcement (no repeats, no line-cutting)
+- [ ] Cleanup stale participant records (auto-delete after 2 weeks of inactivity)
 
 ## UI / UX
 

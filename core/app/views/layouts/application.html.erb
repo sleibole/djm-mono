@@ -31,6 +31,7 @@
         </button>
         <ul id="nav-menu" class="nav-menu">
           <% if logged_in? %>
+            <li><a href="<%= shows_path %>">Shows</a></li>
             <li><a href="<%= catalogs_path %>">Catalogs</a></li>
             <li><a href="<%= account_path %>">Account</a></li>
             <li><%= button_to "Log Out", logout_path, method: :delete %></li>

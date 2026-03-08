@@ -130,23 +130,55 @@ Singers can suggest songs that aren't in the KJ's catalog. This is distinct from
 
 ## Design Decisions
 
-- [ ] Which rotation styles do we support at launch? (Both? Start with one?)
-- [ ] Is rotation style a per-show setting or an account-level default?
-- [ ] Can a KJ switch rotation style mid-show?
+- [x] Which rotation styles do we support at launch? **Standard Rotation first.**
+- [x] Is rotation style a per-show setting or an account-level default? **Account-level default, overridable per show.**
+- [x] Can a KJ switch rotation style mid-show? **Yes.**
 - [ ] How do we communicate expected wait time to singers?
 - [ ] How does the UI differ between rotation styles (if at all)?
 - [ ] What's the notification permission UX? When do we prompt?
 - [ ] Do we store song suggestions per-catalog or per-show?
+- [x] Can a singer have multiple songs in the queue at once? **KJ-configurable setting (max_songs_per_singer).**
+- [x] How do we add songs to the queue? **Search the catalog OR enter manually (both supported).**
+- [x] Where does the KJ manage the queue? **Standalone show page, separate from catalogs.**
+- [x] Real-time updates? **Polling for now. Turbo page refresh with morph or Turbo Frames with periodic reload.**
+
+## Participant Model
+
+Participants (formerly "Singer") are lightweight, temporary records scoped per DJ:
+
+- **Model name:** `Participant` (internal), displayed as "Singer" (karaoke) or "Guest"/"Requester" (DJ) based on show type
+- **Scoped per DJ** via `dj_id` foreign key — each DJ has their own set of participants
+- A Participant has a name and optional link to a User account (`user_id`)
+- No account required to be in a queue (KJ enters the participant's name)
+- Records without a linked account are automatically deleted after ~2 weeks of inactivity
+- A participant can upgrade to an "audience" account to maintain history across shows
+- Song history is tracked per DJ: what songs a participant has performed at which DJ's shows (via QueueEntry → Show → User)
+- KJ can pick from their existing participants (autocomplete) or type a new name
+- An audience member can be a participant at multiple DJs' shows (separate Participant records per DJ, unified when linked to a User account)
+
+## Show Model
+
+A Show represents a live performance session:
+
+- Belongs to a Catalog and a User (the KJ)
+- **Show type:** `karaoke` or `dj` — drives display labels throughout the UI
+  - Karaoke: participants are called "Singers"
+  - DJ: participants are called "Guests" (general) or "Requesters" (request-specific UI)
+- Has a rotation style and max songs per singer setting
+- Status: active or ended
+- KJ explicitly starts and ends shows
+- Queue belongs to a show; queue resets when a new show starts
+- Default show type is an account-level setting on the DJ
 
 ---
 
 ## TODO
 
-- [ ] Queue CRUD (add, remove, reorder)
-- [ ] "Now playing" state
+- [x] Queue CRUD (add, remove, reorder)
+- [x] "Now playing" state
+- [x] KJ manual overrides (bump someone up, skip, remove)
 - [ ] Singer history (who sang what, when)
-- [ ] KJ manual overrides (bump someone up, skip, remove)
 - [ ] Audience-facing queue position / wait estimate
 - [ ] Live notifications (Web Push API + in-page fallback)
 - [ ] Song suggestions list for KJs
-- [ ] Manual song entry (for KJs without a catalog / streaming service users)
+- [x] Manual song entry (for KJs without a catalog / streaming service users)

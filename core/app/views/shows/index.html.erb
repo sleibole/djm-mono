@@ -1,0 +1,57 @@
+<h1>Shows</h1>
+
+<p><a href="<%= new_show_path %>" role="button">Start a Show</a></p>
+
+<% if @active_shows.any? %>
+  <h2>Active</h2>
+  <table role="grid">
+    <thead>
+      <tr>
+        <th>Catalog</th>
+        <th>Type</th>
+        <th>Started</th>
+        <th>Queue</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @active_shows.each do |show| %>
+        <tr>
+          <td><%= show.catalog.name %></td>
+          <td><%= show.show_type.capitalize %></td>
+          <td><%= show.started_at.strftime("%b %-d, %l:%M %p") %></td>
+          <td><%= show.queue_entries.active.count %> in queue</td>
+          <td><a href="<%= show_path(show) %>">Manage</a></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<% if @ended_shows.any? %>
+  <details>
+    <summary>Recent Shows</summary>
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Catalog</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Songs Played</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @ended_shows.each do |show| %>
+          <tr>
+            <td><%= show.catalog.name %></td>
+            <td><%= show.show_type.capitalize %></td>
+            <td><%= show.ended_at&.strftime("%b %-d, %Y") %></td>
+            <td><%= show.queue_entries.completed.count %></td>
+            <td><a href="<%= show_path(show) %>">View</a></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </details>
+<% end %>

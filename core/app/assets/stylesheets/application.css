@@ -7,6 +7,39 @@ table td select {
   padding-block: 0.25rem;
 }
 
+#queue td [role="group"] {
+  margin-bottom: 0;
+}
+
+#queue td [role="group"] button,
+#queue td [role="group"] input[type="submit"] {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+#now-playing [role="group"] {
+  margin-bottom: 0;
+}
+
+#add-to-queue fieldset {
+  border: none;
+  padding: 0;
+  margin-bottom: var(--pico-spacing);
+}
+
+#song-search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#song-search-results table {
+  margin-bottom: 0;
+}
+
+#song-search-results tr:hover {
+  background: var(--pico-primary-focus);
+}
+
 .nav-toggle {
   display: none;
   background: none;

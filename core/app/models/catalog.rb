@@ -2,6 +2,7 @@ class Catalog < ApplicationRecord
   VARIANT_DISPLAY_OPTIONS = %w[none version id].freeze
 
   belongs_to :user
+  has_many :shows, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :variant_display, inclusion: { in: VARIANT_DISPLAY_OPTIONS }

@@ -14,6 +14,20 @@ Rails.application.routes.draw do
     post :upload_token, on: :member
   end
 
+  resources :shows, only: [ :index, :new, :create, :show, :update ] do
+    patch :end_show, on: :member
+    resources :queue_entries, only: [ :create, :destroy ] do
+      member do
+        patch :move
+        patch :now_playing
+        patch :mark_done
+        patch :skip
+      end
+    end
+  end
+
+  get "participants/autocomplete", to: "participants#autocomplete"
+
   get "docs/:slug", to: "docs#show", as: :doc
 
   get   "account", to: "account#show", as: :account
