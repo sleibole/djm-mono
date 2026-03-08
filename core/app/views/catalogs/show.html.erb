@@ -20,6 +20,7 @@
   <div id="upload-feedback" role="status" hidden></div>
 </details>
 
+<hr>
 <details id="settings-section">
   <summary>Settings</summary>
   <%= form_with model: @catalog, method: :patch do |f| %>
@@ -32,6 +33,7 @@
     <%= f.submit "Save", class: "secondary" %>
   <% end %>
 </details>
+<hr>
 
 <section id="catalog-status-section" hidden>
   <div id="catalog-status"></div>
