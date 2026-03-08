@@ -18,10 +18,10 @@
       <label for="password_confirmation">Confirm Password</label>
       <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
 
-      <%= f.submit "Change Password" %>
+      <%= f.submit "Change Password", class: "secondary" %>
     <% end %>
 
-    <%= button_to "Remove Password", account_password_path, method: :delete, data: { turbo_confirm: "Are you sure? You'll use magic links to log in." } %>
+    <%= button_to "Remove Password", account_password_path, method: :delete, class: "btn-danger outline", data: { turbo_confirm: "Are you sure? You'll use magic links to log in." } %>
   <% else %>
     <p>No password set. You log in with magic links. You can optionally set a password.</p>
 
@@ -32,7 +32,7 @@
       <label for="password_confirmation">Confirm Password</label>
       <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
 
-      <%= f.submit "Set Password" %>
+      <%= f.submit "Set Password", class: "secondary" %>
     <% end %>
   <% end %>
 </section>

@@ -15,13 +15,13 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag "pico.classless.min", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "pico.min", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <header>
+    <header class="container">
       <nav>
         <ul>
           <li><strong><a href="/">DJMagic.io</a></strong></li>
@@ -43,13 +43,13 @@
       </nav>
     </header>
 
-    <main>
+    <main class="container">
       <% if notice %><p role="alert" class="flash notice"><%= notice %></p><% end %>
       <% if alert %><p role="alert" class="flash alert"><%= alert %></p><% end %>
       <%= yield %>
     </main>
 
-    <footer>
+    <footer class="container">
       <small>DJMagic.io</small>
     </footer>
   </body>

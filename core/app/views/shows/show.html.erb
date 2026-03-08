@@ -69,7 +69,7 @@
                   <% else %>
                     <%= button_to "↓", "#", disabled: true, class: "outline secondary queue-hidden-btn", title: "Move down" %>
                   <% end %>
-                  <%= button_to "✕", show_queue_entry_path(@show, entry), method: :delete, class: "outline secondary", title: "Remove", data: { turbo_confirm: "Remove #{entry.participant.name} from the queue?" } %>
+                  <%= button_to "✕", show_queue_entry_path(@show, entry), method: :delete, class: "btn-danger outline", title: "Remove", data: { turbo_confirm: "Remove #{entry.participant.name} from the queue?" } %>
                 </div>
               </td>
             </tr>
@@ -94,9 +94,9 @@
 
       <fieldset>
         <label>Song</label>
-        <div role="group">
-          <button type="button" id="mode-search" class="outline" onclick="toggleSongMode('search')">Search Catalog</button>
-          <button type="button" id="mode-manual" class="outline secondary" onclick="toggleSongMode('manual')">Enter Manually</button>
+        <div role="group" class="tab-group">
+          <button type="button" id="mode-search" class="active" onclick="toggleSongMode('search')">Search Catalog</button>
+          <button type="button" id="mode-manual" onclick="toggleSongMode('manual')">Enter Manually</button>
         </div>
 
         <div id="song-search-mode">
@@ -170,12 +170,12 @@
       <%= f.number_field :max_songs_per_singer, min: 1, placeholder: "Unlimited" %>
       <small>Leave blank for unlimited.</small>
 
-      <%= f.submit "Save Settings" %>
+      <%= f.submit "Save Settings", class: "secondary" %>
     <% end %>
   </details>
 
   <hr>
-  <%= button_to "End Show", end_show_show_path(@show), method: :patch, class: "secondary outline", data: { turbo_confirm: "End this show? The queue will be closed." } %>
+  <%= button_to "End Show", end_show_show_path(@show), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "End this show? The queue will be closed." } %>
 <% end %>
 
 <p><a href="<%= shows_path %>">Back to shows</a></p>
@@ -233,15 +233,15 @@
       if (mode === "search") {
         searchMode.hidden = false;
         manualMode.hidden = true;
-        searchBtn.className = "outline";
-        manualBtn.className = "outline secondary";
+        searchBtn.className = "active";
+        manualBtn.className = "";
         document.getElementById("manual-song-title").removeAttribute("name");
         document.getElementById("manual-song-artist").removeAttribute("name");
       } else {
         searchMode.hidden = true;
         manualMode.hidden = false;
-        searchBtn.className = "outline secondary";
-        manualBtn.className = "outline";
+        searchBtn.className = "";
+        manualBtn.className = "active";
         document.getElementById("manual-song-title").setAttribute("name", "song_title");
         document.getElementById("manual-song-artist").setAttribute("name", "song_artist");
         clearHiddenSongFields();

@@ -116,6 +116,63 @@ table td select {
   }
 }
 
+/* --- Danger button --- */
+
+.btn-danger,
+.btn-danger[type="submit"] {
+  --pico-background-color: var(--pico-del-color);
+  --pico-border-color: var(--pico-del-color);
+  --pico-color: #fff;
+}
+
+.btn-danger:hover,
+.btn-danger[type="submit"]:hover {
+  --pico-background-color: color-mix(in srgb, var(--pico-del-color) 85%, #000);
+  --pico-border-color: color-mix(in srgb, var(--pico-del-color) 85%, #000);
+}
+
+.btn-danger.outline,
+.btn-danger.outline[type="submit"] {
+  --pico-color: var(--pico-del-color);
+  --pico-border-color: var(--pico-del-color);
+  --pico-background-color: transparent;
+}
+
+.btn-danger.outline:hover,
+.btn-danger.outline[type="submit"]:hover {
+  --pico-background-color: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
+}
+
+/* --- Tab toggle group --- */
+
+.tab-group {
+  gap: 0;
+  margin-bottom: var(--pico-spacing);
+}
+
+.tab-group button {
+  border-radius: 0;
+  margin-bottom: 0;
+  width: auto;
+  flex: 1;
+}
+
+.tab-group button:first-child {
+  border-radius: var(--pico-border-radius) 0 0 var(--pico-border-radius);
+}
+
+.tab-group button:last-child {
+  border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
+}
+
+.tab-group button:not(.active) {
+  --pico-background-color: transparent;
+  --pico-color: var(--pico-secondary);
+  --pico-border-color: var(--pico-secondary-border);
+}
+
+/* --- Flash messages --- */
+
 .flash {
   padding: var(--pico-spacing);
   border-radius: var(--pico-border-radius);
