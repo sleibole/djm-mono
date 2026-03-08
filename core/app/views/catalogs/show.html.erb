@@ -53,6 +53,7 @@
     const statusSection = document.getElementById("catalog-status-section");
     const statusDiv = document.getElementById("catalog-status");
     const uploadSection = document.getElementById("upload-section");
+    const settingsSection = document.getElementById("settings-section");
     const uploadUrl = "<%= @songs_upload_url %>";
     const tokenUrl = "<%= upload_token_catalog_path(@catalog) %>";
     const catalogId = "<%= @catalog.id %>";
@@ -75,6 +76,8 @@
             if (data.song_count != null) {
               songCountEl.textContent = data.song_count.toLocaleString() + " songs";
             }
+          } else {
+            settingsSection.setAttribute("open", "");
           }
 
           if (data.status === "processing" || data.status === "pending") {

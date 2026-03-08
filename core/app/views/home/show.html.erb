@@ -1,12 +1,180 @@
 <% if logged_in? %>
-  <hgroup>
-    <h1>DJMagic.io</h1>
-    <p>Welcome, <%= current_user.email %>!</p>
-  </hgroup>
+  <div class="container">
+    <hgroup>
+      <h1>DJMagic.io</h1>
+      <p>Welcome, <%= current_user.email %>!</p>
+    </hgroup>
+  </div>
 <% else %>
-  <hgroup>
-    <h1>DJMagic.io</h1>
-    <p>Song request management for KJs and DJs.</p>
-  </hgroup>
-  <p><a href="<%= signup_path %>" role="button">Get Started</a></p>
+
+<%# ── Hero ── %>
+<section class="hero-paper" style="text-align: center; background-image: url('<%= image_path('landing/paper/bartop.png') %>');">
+  <div class="hero-overlay"></div>
+  <div class="container">
+    <h1 id="tired-heading">Tired of this?</h1>
+    <div class="paper-slip-wrapper">
+      <%= image_tag('landing/paper/paper_slip.png', alt: 'Paper song request slip', class: 'paper-slip-image', id: 'paper-slip-image') %>
+    </div>
+    <h2 id="us-too-heading">Us too.</h2>
+  </div>
+</section>
+
+<%# ── Singer Journey ── %>
+<section class="container landing-section">
+  <header style="text-align: center;">
+    <h2><i class="fa-solid fa-shuffle"></i> Requests, Not Chaos</h2>
+    <p class="landing-subtitle">Turn a messy night into a smooth rotation. Here's what a singer's journey looks like with DJMagic.</p>
+  </header>
+  <ol class="journey-list">
+    <li>
+      <strong><i class="fa-solid fa-person-walking-arrow-right"></i> 1) A singer walks in.</strong>
+      <div>They scan a QR code <i class="fi fi-rr-qrcode"></i> — no download, no signup friction.</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-mobile-screen-button"></i> 2) They land on your custom page.</strong>
+      <div>Your catalog appears instantly — branded for your show.</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-magnifying-glass"></i> 3) They find the song.</strong>
+      <div>Search, browse, or manually enter a title you don't have yet.</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-paper-plane"></i> 4) They submit their request.</strong>
+      <div>It jumps straight into your rotation with their name.</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-list-check"></i> 5) You manage the queue effortlessly.</strong>
+      <div>Automated rotation logic keeps everything fair — no line cutters, no repeats, no arguing (but YOU can still adjust if needed).</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-bell"></i> 6) The singer sees exactly where they stand.</strong>
+      <div>Personal page updates live. Push alerts hit when they're up next and when it's time to sing. No more "AM I NEXT?!" shouted from across the room.</div>
+    </li>
+    <li>
+      <strong><i class="fa-solid fa-face-smile"></i> 7) Happy singers. Smooth rotation. Zero paper.</strong>
+      <div>Your night feels professional, modern, and stress-free.</div>
+    </li>
+  </ol>
+  <div class="landing-cta-block">
+    <h3>Ready to Ditch Paper Slips for Good?</h3>
+    <p><a href="<%= signup_path %>" role="button">Get Started</a></p>
+  </div>
+</section>
+
+<hr class="landing-divider">
+
+<%# ── Feature Grid ── %>
+<section class="container landing-section">
+  <header style="text-align: center;">
+    <h2><i class="fa-solid fa-sparkles"></i> Everything You Need for a Smooth, Stress-Free Karaoke Night</h2>
+  </header>
+  <div class="feature-grid">
+    <article>
+      <h3><i class="fi fi-rr-qrcode"></i> QR Code Entry</h3>
+      <p>One scan, and they're in your rotation. No app. No account. No explaining anything.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-bolt"></i> Smart Search</h3>
+      <p>Lightning-fast search across your entire catalog.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-keyboard"></i> Manual Song Entry</h3>
+      <p>Use a streaming service? Don't want to bother with a CSV file? No problem. Singers can type any song title, and you take it from there.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-rotate"></i> Rotation That's Fair</h3>
+      <p>Automatic rotation that prevents repeats, line-cutting, and arguments — the system enforces fairness for you.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-user-group"></i> Singer View</h3>
+      <p>Every singer gets a simple "Where am I in line?" page with live updates — fewer interruptions for you, less confusion for them.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-bell"></i> Live Notifications</h3>
+      <p>"You're up next" and "You're up!" alerts reduce no-shows and keep your night moving without you yelling names.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-clock-rotate-left"></i> Request History</h3>
+      <p>Know who sang what and when — at a glance.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Built for KJs</h3>
+      <p>Designed specifically for the unique chaos of karaoke nights — not generic DJ software.</p>
+    </article>
+    <article>
+      <h3><i class="fa-solid fa-lightbulb"></i> Song Suggestions</h3>
+      <p>Accept song suggestions from singers for tracks not yet in your catalog — expand your library based on what your crowd wants.</p>
+    </article>
+  </div>
+  <div class="landing-cta-block">
+    <h3>Ready to Ditch Paper Slips for Good?</h3>
+    <p><a href="<%= signup_path %>" role="button">Get Started</a></p>
+  </div>
+</section>
+
+<%# ── Logo ── %>
+<section style="text-align: center; padding: 3rem 1rem;">
+  <%= image_tag('brand_icons/dark/dark_192.png', alt: 'DJMagic.io', style: 'border-radius: 12px;') %>
+</section>
+
+<%# ── Landing Footer ── %>
+<footer class="landing-footer">
+  <p>Join our community</p>
+  <p>
+    <a href="https://www.reddit.com/r/djmagicio/" target="_blank" rel="noopener noreferrer" class="reddit-link">
+      <i class="fa-brands fa-reddit"></i>
+      <span>r/djmagicio</span>
+    </a>
+  </p>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var img = document.getElementById('paper-slip-image');
+    var tiredHeading = document.getElementById('tired-heading');
+    var usTooHeading = document.getElementById('us-too-heading');
+
+    if (!img || !tiredHeading || !usTooHeading) return;
+
+    function playAnimation(element, callback) {
+      element.classList.remove('text-grow-shrink');
+      void element.offsetWidth;
+      element.classList.add('text-grow-shrink');
+
+      element.addEventListener('animationend', function handler(event) {
+        if (event.target !== element) return;
+        element.removeEventListener('animationend', handler);
+        if (typeof callback === 'function') callback();
+      });
+    }
+
+    function rotatePaper(callback) {
+      function handleTransition(event) {
+        if (event.propertyName !== 'transform') return;
+        img.removeEventListener('transitionend', handleTransition);
+        if (typeof callback === 'function') callback();
+      }
+
+      img.addEventListener('transitionend', handleTransition);
+      img.classList.add('paper-rotated');
+    }
+
+    function startSequence() {
+      setTimeout(function () {
+        playAnimation(tiredHeading, function () {
+          rotatePaper(function () {
+            playAnimation(usTooHeading);
+          });
+        });
+      }, 1000);
+    }
+
+    if (img.complete) {
+      startSequence();
+    } else {
+      img.addEventListener('load', startSequence, { once: true });
+    }
+  });
+</script>
+
 <% end %>
