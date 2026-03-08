@@ -61,9 +61,13 @@
                   <%= button_to "▶", now_playing_show_queue_entry_path(@show, entry), method: :patch, class: "outline", title: "Start" %>
                   <% if idx > 0 %>
                     <%= button_to "↑", move_show_queue_entry_path(@show, entry, position: entry.position - 1), method: :patch, class: "outline secondary", title: "Move up" %>
+                  <% else %>
+                    <%= button_to "↑", "#", disabled: true, class: "outline secondary queue-hidden-btn", title: "Move up" %>
                   <% end %>
                   <% if idx < @waiting.count - 1 %>
                     <%= button_to "↓", move_show_queue_entry_path(@show, entry, position: entry.position + 1), method: :patch, class: "outline secondary", title: "Move down" %>
+                  <% else %>
+                    <%= button_to "↓", "#", disabled: true, class: "outline secondary queue-hidden-btn", title: "Move down" %>
                   <% end %>
                   <%= button_to "✕", show_queue_entry_path(@show, entry), method: :delete, class: "outline secondary", title: "Remove", data: { turbo_confirm: "Remove #{entry.participant.name} from the queue?" } %>
                 </div>

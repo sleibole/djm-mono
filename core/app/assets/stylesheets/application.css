@@ -17,6 +17,12 @@ table td select {
   font-size: 0.875rem;
 }
 
+.queue-hidden-btn,
+.queue-hidden-btn:disabled {
+  opacity: 0.15;
+  pointer-events: none;
+}
+
 #now-playing [role="group"] {
   margin-bottom: 0;
 }
