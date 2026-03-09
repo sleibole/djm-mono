@@ -1,0 +1,17 @@
+---
+description: Privacy rules for user data in audience-facing views
+alwaysApply: true
+---
+
+# Privacy: Never Expose User Emails
+
+User emails must never be displayed in audience-facing pages or any public UI. Emails are sensitive PII.
+
+**Where this applies:**
+
+- Page titles
+- Links (e.g. "Back to [DJ name]")
+- Headings and labels
+- Any HTML rendered for unauthenticated visitors
+
+**Use `user.public_name`** for display text in audience-facing views. This returns `display_name` if set, otherwise falls back to `slug`. Never use `user.email` directly.

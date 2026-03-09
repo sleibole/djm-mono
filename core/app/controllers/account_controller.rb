@@ -29,4 +29,12 @@ class AccountController < ApplicationController
       redirect_to account_path, alert: current_user.errors.full_messages.to_sentence
     end
   end
+
+  def update_display_name
+    if current_user.update(display_name: params[:display_name].presence)
+      redirect_to account_path, notice: "Display name updated."
+    else
+      redirect_to account_path, alert: current_user.errors.full_messages.to_sentence
+    end
+  end
 end

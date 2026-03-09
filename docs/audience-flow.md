@@ -159,6 +159,12 @@ Optional account (via magic link) unlocks:
 
 ---
 
+## Privacy
+
+- **Never expose a user's email in audience-facing pages.** Use the DJ's handle/slug or display name in page titles, links, headings, and any publicly visible UI. Emails are sensitive PII and must not appear in any unauthenticated view.
+
+---
+
 ## Design Decisions
 
 - [x] How do we identify a singer across requests within a show? **Lightweight Singer record in DB (name + optional account link). KJ manages singers for now; audience self-service comes later.**

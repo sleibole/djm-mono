@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_203125) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_08_225954) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -87,6 +87,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_203125) do
     t.integer "default_max_songs_per_singer"
     t.string "default_rotation_style", default: "standard", null: false
     t.string "default_show_type", default: "karaoke", null: false
+    t.string "display_name"
     t.string "email", null: false
     t.datetime "email_confirmed_at"
     t.integer "failed_login_attempts", default: 0, null: false

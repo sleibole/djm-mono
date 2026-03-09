@@ -20,6 +20,18 @@
 </section>
 
 <section>
+  <h2>Display Name</h2>
+  <p>This is the name shown to your audience. If not set, your handle will be used instead.</p>
+
+  <%= form_with url: account_display_name_path, method: :patch do |f| %>
+    <label for="display_name">Display Name</label>
+    <input type="text" name="display_name" id="display_name" value="<%= current_user.display_name %>"
+           placeholder="e.g. DJ Mike" maxlength="50">
+    <%= f.submit "Save Display Name", class: "secondary" %>
+  <% end %>
+</section>
+
+<section>
   <h2>Your Handle</h2>
   <% if current_user.slug.present? %>
     <p>Your public URL: <strong>djmagic.io/dj/<%= current_user.slug %></strong></p>

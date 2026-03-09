@@ -15,6 +15,7 @@ class User < ApplicationRecord
                    length: { minimum: 3, maximum: 30 },
                    format: { with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?\z/,
                              message: "must be lowercase letters, numbers, and hyphens (can't start or end with a hyphen)" }
+  validates :display_name, length: { maximum: 50 }, allow_nil: true
 
   normalizes :slug, with: ->(slug) { slug.strip.downcase }
 
@@ -53,6 +54,10 @@ class User < ApplicationRecord
 
   def has_password?
     password_digest.present?
+  end
+
+  def public_name
+    display_name.presence || slug
   end
 
   def ensure_slug!

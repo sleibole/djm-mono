@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   patch "account/password", to: "account#update_password", as: :account_password
   delete "account/password", to: "account#remove_password"
   patch "account/slug", to: "account#update_slug", as: :account_slug
+  patch "account/display_name", to: "account#update_display_name", as: :account_display_name
 
   root "home#show"
 end

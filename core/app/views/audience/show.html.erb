@@ -1,4 +1,4 @@
-<% content_for(:title) { "#{@show.catalog.name} | #{@dj.email} | DJMagic.io" } %>
+<% content_for(:title) { "#{@show.catalog.name} | #{@dj.public_name} | DJMagic.io" } %>
 
 <hgroup>
   <h1><%= @show.catalog.name %></h1>
@@ -79,7 +79,7 @@
   </section>
 <% end %>
 
-<p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.email %></a></p>
+<p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.public_name %></a></p>
 
 <% if @show.active? %>
 <script>
