@@ -24,7 +24,7 @@ class AccountController < ApplicationController
 
   def update_slug
     if current_user.update(slug: params[:slug])
-      redirect_to account_path, notice: "Handle updated."
+      redirect_to account_path, notice: "URL slug updated."
     else
       redirect_to account_path, alert: current_user.errors.full_messages.to_sentence
     end

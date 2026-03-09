@@ -63,8 +63,7 @@ class User < ApplicationRecord
   def ensure_slug!
     return slug if slug.present?
 
-    base = email.split("@").first.parameterize.first(20)
-    base = "dj-#{SecureRandom.alphanumeric(4).downcase}" if base.length < 3
+    base = "dj-#{SecureRandom.alphanumeric(6).downcase}"
 
     candidate = base
     counter = 1

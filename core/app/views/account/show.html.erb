@@ -21,7 +21,7 @@
 
 <section>
   <h2>Display Name</h2>
-  <p>This is the name shown to your audience. If not set, your handle will be used instead.</p>
+  <p>This is the name shown to your audience. If not set, your URL slug will be used instead.</p>
 
   <%= form_with url: account_display_name_path, method: :patch do |f| %>
     <label for="display_name">Display Name</label>
@@ -32,20 +32,20 @@
 </section>
 
 <section>
-  <h2>Your Handle</h2>
+  <h2>URL Slug</h2>
   <% if current_user.slug.present? %>
     <p>Your public URL: <strong>djmagic.io/dj/<%= current_user.slug %></strong></p>
   <% else %>
-    <p>Set a handle to get a public profile page and shareable links for your shows.</p>
+    <p>Set a URL slug to get a public profile page and shareable links for your shows.</p>
   <% end %>
 
   <%= form_with url: account_slug_path, method: :patch do |f| %>
-    <label for="slug">Handle</label>
+    <label for="slug">URL Slug</label>
     <input type="text" name="slug" id="slug" value="<%= current_user.slug %>"
            placeholder="e.g. djmike" required minlength="3" maxlength="30"
            pattern="[a-z0-9][a-z0-9\-]*[a-z0-9]">
     <small>Lowercase letters, numbers, and hyphens. 3&ndash;30 characters.</small>
-    <%= f.submit "Save Handle", class: "secondary" %>
+    <%= f.submit "Save URL Slug", class: "secondary" %>
   <% end %>
 </section>
 
