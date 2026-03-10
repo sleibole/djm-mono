@@ -64,9 +64,15 @@ User input is sanitized before reaching FTS5:
 
 ---
 
+## Shard Routing
+
+Search requests are routed to the songs app shard that owns the catalog. Each catalog has a `songs_shard` integer, and `Catalog#songs_app_url` resolves it to the correct shard URL. In development, all shards fall back to `SONGS_APP_URL` (localhost:3001).
+
+---
+
 ## Search Endpoint
 
-`GET /catalogs/:catalog_id/search`
+`GET /catalogs/:catalog_id/search` (on the catalog's assigned shard)
 
 ### Parameters
 

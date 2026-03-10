@@ -54,4 +54,5 @@ Tracked improvements, enhancements, and ideas.
 
 ## Infrastructure / Scaling
 
-- [ ] Shard songs app to handle Fly.io 500GB per-volume limit (one volume per instance — per-catalog SQLite DBs will eventually exceed this as user base grows)
+- [x] Shard songs app — each catalog has a `songs_shard` integer that routes requests to the correct songs app instance (e.g. `songs1.djmagic.io`). Per-shard URLs configured via `SONGS_SHARD_N_URL` env vars, falling back to `SONGS_APP_URL`
+- [ ] Admin tooling to reassign catalogs between shards

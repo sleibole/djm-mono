@@ -210,17 +210,27 @@ If either is missing → **reject the file**.
 - Per-catalog song databases are **not replicated** — they are regenerated from Active Storage CSVs on each instance startup
 - CSV processing (background jobs) runs on the **songs app primary server** only via Solid Queue
 
+### Songs App Sharding
+
+The songs app is shardable — each shard is a separate Fly.io app (e.g. `djm-songs-1`, `djm-songs-2`) with its own volume, application database, and per-catalog SQLite DBs.
+
+Each catalog in the core app has a `songs_shard` integer (default `1`) that determines which songs app instance handles its uploads, search, and status requests. The `Catalog#songs_app_url` method resolves the shard number to a URL via per-shard env vars, falling back to `SONGS_APP_URL` when no shard-specific var exists (e.g. in development).
+
 ### Deployment Layout
 
 ```
 Fly.io
 ├── djm-core              # core Rails app (Hotwire UI)
 │   └── LiteFS            # replicates core application DB
-├── djm-songs             # songs Rails API app
+├── djm-songs-1           # songs shard 1
 │   ├── LiteFS            # replicates songs application DB
 │   ├── catalog DBs/      # per-catalog SQLite+FTS5 (local, not replicated)
 │   └── background jobs   # CSV → SQLite processing (primary only)
-└── Tigris                # S3-compatible storage for CSV files
+├── djm-songs-2           # songs shard 2 (added as needed)
+│   ├── LiteFS
+│   ├── catalog DBs/
+│   └── background jobs
+└── Tigris                # S3-compatible storage for CSV files (shared)
 ```
 
 ---
@@ -284,7 +294,8 @@ Both apps use `.env` files (loaded by `dotenv-rails`):
 | Variable | Used by | Description |
 |----------|---------|-------------|
 | `DJM_JWT_SECRET` | core, songs | Shared secret for JWT signing (must match) |
-| `SONGS_APP_URL` | core | URL of the songs app (`http://localhost:3001` in dev) |
+| `SONGS_APP_URL` | core | Default/fallback songs app URL (`http://localhost:3001` in dev) |
+| `SONGS_SHARD_N_URL` | core | Per-shard songs app URL (e.g. `SONGS_SHARD_1_URL`). Optional — falls back to `SONGS_APP_URL` |
 | `CORE_APP_URL` | songs | URL of the core app (`http://localhost:3000` in dev) |
 
 ### Test fixtures
@@ -300,20 +311,23 @@ Sample CSV files for testing uploads are in `fixtures/csvs/`.
 | Fly app | Source | Notes |
 |---------|--------|-------|
 | `djm-core` | `core/` | LiteFS for DB replication |
-| `djm-songs` | `songs/` | LiteFS for app DB, Active Storage → Tigris for CSVs |
+| `djm-songs-1` | `songs/` | Songs shard 1. LiteFS for app DB, Active Storage → Tigris for CSVs |
+| `djm-songs-N` | `songs/` | Additional shards added as needed (same source, separate Fly app + volume) |
 
 ### Environment Variables (Production)
 
 Set on each Fly.io app via `fly secrets set`:
 
 ```bash
-# Both apps
+# Both apps (set on each Fly app)
 fly secrets set DJM_JWT_SECRET=<generate-a-strong-secret>
 
 # Core app
-fly secrets set SONGS_APP_URL=https://songs.djmagic.io
+fly secrets set SONGS_APP_URL=https://songs1.djmagic.io   # fallback default
+fly secrets set SONGS_SHARD_1_URL=https://songs1.djmagic.io
+# fly secrets set SONGS_SHARD_2_URL=https://songs2.djmagic.io  # when adding shards
 
-# Songs app
+# Songs app (set on each shard)
 fly secrets set CORE_APP_URL=https://djmagic.io
 ```
 
@@ -356,7 +370,7 @@ fly secrets set CORE_APP_URL=https://djmagic.io
 
 - Both apps use SQLite for simplicity and portability
 - FTS5 provides fast full-text search over song titles, artists, etc.
-- The songs app is intentionally isolated to keep the catalog/upload logic contained and to allow for potential scaling or extraction later
+- The songs app is intentionally isolated and shardable — each shard is a separate Fly.io app with its own volume, and catalogs are assigned to shards via the `songs_shard` column
 - LiteFS replicates application databases only; per-catalog song DBs are disposable artifacts
 - CSVs in Active Storage are the source of truth for song data; SQLite catalog DBs are a derived cache
 - On songs app instance boot, catalog DBs are regenerated from stored CSVs — no replication needed

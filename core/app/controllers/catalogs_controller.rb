@@ -19,7 +19,8 @@ class CatalogsController < ApplicationController
   end
 
   def show
-    @songs_upload_url = "#{ENV.fetch('SONGS_APP_URL')}/catalogs/#{@catalog.id}/upload"
+    @songs_app_url = @catalog.songs_app_url
+    @songs_upload_url = "#{@songs_app_url}/catalogs/#{@catalog.id}/upload"
   end
 
   def update

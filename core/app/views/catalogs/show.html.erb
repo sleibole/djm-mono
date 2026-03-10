@@ -57,7 +57,7 @@
     const uploadUrl = "<%= @songs_upload_url %>";
     const tokenUrl = "<%= upload_token_catalog_path(@catalog) %>";
     const catalogId = "<%= @catalog.id %>";
-    const songsAppUrl = "<%= ENV.fetch('SONGS_APP_URL') %>";
+    const songsAppUrl = "<%= @songs_app_url %>";
     const statusUrl = songsAppUrl + "/catalogs/" + catalogId + "/status";
     const searchUrl = songsAppUrl + "/catalogs/" + catalogId + "/search";
     const variantDisplay = "<%= @catalog.variant_display %>";

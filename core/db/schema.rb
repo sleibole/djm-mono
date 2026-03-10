@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_225954) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_10_233333) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
+    t.integer "songs_shard", default: 1, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.string "variant_display", default: "none", null: false

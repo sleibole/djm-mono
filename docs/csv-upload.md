@@ -53,7 +53,8 @@ DJ Browser                  Core App                Songs App              Activ
 
 ### 2. Browser Uploads to Songs App
 
-- Browser sends a `POST` to the songs app with:
+- The upload URL points to the catalog's assigned shard (resolved via `Catalog#songs_app_url`)
+- Browser sends a `POST` to the songs app shard with:
   - The CSV file (multipart form data)
   - The JWT in the `Authorization` header
 - This is a direct browser → songs app request (the CSV never passes through the core app)
@@ -197,9 +198,15 @@ CREATE VIRTUAL TABLE songs_fts USING fts5(
 
 ---
 
+## Shard Routing
+
+Each catalog has a `songs_shard` integer that determines which songs app instance handles its uploads, status polling, and search. The core app resolves this via `Catalog#songs_app_url`, which checks for a `SONGS_SHARD_N_URL` env var and falls back to `SONGS_APP_URL`. In development, all catalogs route to the same local songs app.
+
+---
+
 ## Startup: Regenerating Catalog DBs
 
-When a songs app instance starts (deploy, scale-out, restart):
+When a songs app instance (shard) starts (deploy, scale-out, restart):
 
 1. List all CatalogRecords with an `active_db_version`
 2. For each, download the CSV from Active Storage

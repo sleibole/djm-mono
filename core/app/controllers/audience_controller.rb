@@ -9,7 +9,7 @@ class AudienceController < ApplicationController
   end
 
   def show
-    @songs_app_url = ENV.fetch("SONGS_APP_URL")
+    @songs_app_url = @show.catalog.songs_app_url
     @participant_name = session_participant&.name
   end
 

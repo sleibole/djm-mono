@@ -38,7 +38,7 @@ class ShowsController < ApplicationController
     @waiting = @show.waiting_entries.includes(:participant)
     @pending = @show.pending_entries.includes(:participant)
     @completed = @show.queue_entries.completed.includes(:participant).order(performed_at: :desc)
-    @songs_app_url = ENV.fetch("SONGS_APP_URL")
+    @songs_app_url = @show.catalog.songs_app_url
   end
 
   def update

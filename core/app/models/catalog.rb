@@ -6,6 +6,13 @@ class Catalog < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :variant_display, inclusion: { in: VARIANT_DISPLAY_OPTIONS }
+  validates :songs_shard, presence: true, numericality: { only_integer: true, greater_than: 0 }
+
+  attribute :songs_shard, default: -> { ENV.fetch("SONGS_SHARD_CURRENT", 1).to_i }
+
+  def songs_app_url
+    ENV["SONGS_SHARD_#{songs_shard}_URL"] || ENV.fetch("SONGS_APP_URL")
+  end
 
   def songs_app_status
     @songs_app_status
