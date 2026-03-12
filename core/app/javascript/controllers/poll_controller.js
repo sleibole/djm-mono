@@ -3,19 +3,30 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = {
     interval: { type: Number, default: 10000 },
-    src: String
+    src: String,
+    selector: String
   }
 
   connect() {
-    this.timer = setInterval(() => {
-      const frame = this.element.tagName === "TURBO-FRAME" ? this.element : this.element.closest("turbo-frame")
-      if (frame && this.hasSrcValue) {
-        frame.src = this.srcValue
-      }
-    }, this.intervalValue)
+    this.timer = setInterval(() => this.poll(), this.intervalValue)
   }
 
   disconnect() {
     clearInterval(this.timer)
+  }
+
+  async poll() {
+    if (this.element.querySelector("dialog[open]")) return
+
+    try {
+      const resp = await fetch(this.srcValue, { headers: { "Accept": "text/html" } })
+      if (!resp.ok) return
+      const html = await resp.text()
+      const doc = new DOMParser().parseFromString(html, "text/html")
+      const fresh = doc.querySelector(this.selectorValue)
+      if (fresh) this.element.innerHTML = fresh.innerHTML
+    } catch (e) {
+      // silently ignore network errors
+    }
   }
 }

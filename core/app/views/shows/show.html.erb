@@ -52,9 +52,9 @@
 
 <% if @show.active? %>
   <%# --- Pending Requests (polls for updates) --- %>
-  <%= turbo_frame_tag "pending-requests", data: { controller: "poll", poll_interval_value: 10000, poll_src_value: show_path(@show) } do %>
+  <div id="pending-requests-container" data-controller="poll" data-poll-interval-value="10000" data-poll-src-value="<%= show_path(@show) %>" data-poll-selector-value="#pending-requests-container">
     <% if @show.approval_required? && @pending.any? %>
-      <section id="pending-requests">
+      <section>
         <h2>Pending Requests <small>(<%= @pending.count %>)</small></h2>
         <table class="striped" role="grid">
           <thead>
@@ -101,7 +101,7 @@
         </table>
       </section>
     <% end %>
-  <% end %>
+  </div>
 
   <%# --- Now Playing --- %>
   <section id="now-playing">
