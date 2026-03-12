@@ -6,6 +6,7 @@ class AudienceController < ApplicationController
 
   def dj_profile
     @active_shows = @dj.shows.active.includes(:catalog).order(started_at: :desc)
+    @scheduled_shows = @dj.shows.scheduled.includes(:catalog).order(:scheduled_at)
   end
 
   def show
@@ -25,8 +26,8 @@ class AudienceController < ApplicationController
 
   def create_request
     unless @show.active?
-      redirect_to audience_show_path(handle: @dj.slug, show_slug: @show.slug),
-                  alert: "This show has ended and is no longer accepting requests."
+      message = @show.scheduled? ? "This show hasn't started yet." : "This show has ended and is no longer accepting requests."
+      redirect_to audience_show_path(handle: @dj.slug, show_slug: @show.slug), alert: message
       return
     end
 

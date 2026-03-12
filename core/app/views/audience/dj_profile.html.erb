@@ -10,7 +10,7 @@
     <h2>Live Now</h2>
     <% @active_shows.each do |show| %>
       <article>
-        <h3><a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>"><%= show.catalog.name %></a></h3>
+        <h3><a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>"><%= show.display_name %></a></h3>
         <p>
           <mark><%= show.show_type.capitalize %></mark>
           &mdash; Started <%= show.started_at.strftime("%l:%M %p") %>
@@ -19,7 +19,24 @@
       </article>
     <% end %>
   </section>
-<% else %>
+<% end %>
+
+<% if @scheduled_shows.any? %>
+  <section>
+    <h2>Upcoming</h2>
+    <% @scheduled_shows.each do |show| %>
+      <article>
+        <h3><%= show.display_name %></h3>
+        <p>
+          <mark><%= show.show_type.capitalize %></mark>
+          &mdash; <%= show.scheduled_at&.strftime("%b %-d, %l:%M %p") %>
+        </p>
+      </article>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @active_shows.empty? && @scheduled_shows.empty? %>
   <section>
     <p>No live shows right now. Check back later!</p>
   </section>

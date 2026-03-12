@@ -1,9 +1,11 @@
-<% content_for(:title) { "#{@show.catalog.name} | #{@dj.public_name} | DJMagic.io" } %>
+<% content_for(:title) { "#{@show.display_name} | #{@dj.public_name} | DJMagic.io" } %>
 
 <hgroup>
-  <h1><%= @show.catalog.name %></h1>
+  <h1><%= @show.display_name %></h1>
   <p>
-    <% if @show.active? %>
+    <% if @show.scheduled? %>
+      <mark><%= @show.show_type.capitalize %></mark> &mdash; Scheduled for <%= @show.scheduled_at&.strftime("%b %-d, %l:%M %p") %>
+    <% elsif @show.active? %>
       <mark><%= @show.show_type.capitalize %></mark> &mdash; Live now
     <% else %>
       This show has ended.
@@ -11,7 +13,12 @@
   </p>
 </hgroup>
 
-<% if @show.active? %>
+<% if @show.scheduled? %>
+  <section>
+    <p>This show hasn't started yet. Check back at the scheduled time!</p>
+    <p><a href="<%= dj_profile_path(handle: @dj.slug) %>">See other shows</a></p>
+  </section>
+<% elsif @show.active? %>
   <%# --- Step 1: Search and select a song --- %>
   <section id="step-search">
     <h3>Step 1: Find your song</h3>

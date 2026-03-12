@@ -1,8 +1,9 @@
 class ShowsController < ApplicationController
   before_action :require_login
-  before_action :set_show, only: [ :show, :update, :end_show ]
+  before_action :set_show, only: [ :show, :update, :end_show, :start_show ]
 
   def index
+    @scheduled_shows = current_user.shows.scheduled.includes(:catalog).order(:scheduled_at)
     @active_shows = current_user.shows.active.includes(:catalog).order(started_at: :desc)
     @ended_shows = current_user.shows.ended.includes(:catalog).order(ended_at: :desc).limit(20)
   end
@@ -15,17 +16,24 @@ class ShowsController < ApplicationController
     catalog = current_user.catalogs.find(params[:catalog_id])
     current_user.ensure_slug!
 
+    scheduled_at = params[:scheduled_at].presence
+    scheduling = scheduled_at.present?
+
     @show = current_user.shows.build(
       catalog: catalog,
+      name: params[:name].presence,
+      slug: params[:slug].presence,
       show_type: params[:show_type].presence || current_user.default_show_type,
       rotation_style: current_user.default_rotation_style,
       max_songs_per_singer: current_user.default_max_songs_per_singer,
-      status: "active",
-      started_at: Time.current
+      status: scheduling ? "scheduled" : "active",
+      started_at: scheduling ? nil : Time.current,
+      scheduled_at: scheduled_at
     )
 
     if @show.save
-      redirect_to @show, notice: "Show started!"
+      notice = scheduling ? "Show scheduled!" : "Show started!"
+      redirect_to @show, notice: notice
     else
       @catalogs = current_user.catalogs.order(:name)
       render :new, status: :unprocessable_entity
@@ -49,6 +57,11 @@ class ShowsController < ApplicationController
     end
   end
 
+  def start_show
+    @show.start!
+    redirect_to @show, notice: "Show started!"
+  end
+
   def end_show
     @show.end_show!
     redirect_to shows_path, notice: "Show ended."
@@ -61,6 +74,6 @@ class ShowsController < ApplicationController
   end
 
   def show_params
-    params.require(:show).permit(:show_type, :rotation_style, :max_songs_per_singer, :approval_required, :manual_entry_enabled, :slug)
+    params.require(:show).permit(:show_type, :rotation_style, :max_songs_per_singer, :approval_required, :manual_entry_enabled, :slug, :name, :scheduled_at)
   end
 end

@@ -1,13 +1,22 @@
 <header>
-  <h1><%= @show.catalog.name %></h1>
+  <h1><%= @show.display_name %></h1>
   <p>
-    <% if @show.active? %>
+    <% if @show.scheduled? %>
+      <mark>Scheduled</mark> &mdash; <%= @show.show_type.capitalize %> &mdash; <%= @show.scheduled_at&.strftime("%b %-d, %l:%M %p") %>
+    <% elsif @show.active? %>
       <mark>Live</mark> &mdash; <%= @show.show_type.capitalize %> &mdash; Started <%= @show.started_at.strftime("%l:%M %p") %>
     <% else %>
       <%= @show.show_type.capitalize %> &mdash; Ended <%= @show.ended_at&.strftime("%b %-d, %l:%M %p") %>
     <% end %>
   </p>
 </header>
+
+<% if @show.scheduled? %>
+  <section>
+    <p>This show is scheduled but not yet live. Start it when you're ready.</p>
+    <%= button_to "Start Show", start_show_show_path(@show), method: :patch %>
+  </section>
+<% end %>
 
 <% if @show.active? && current_user.slug.present? %>
   <%# --- Share / QR Codes --- %>
@@ -248,11 +257,14 @@
   </details>
 <% end %>
 
-<% if @show.active? %>
+<% if @show.active? || @show.scheduled? %>
   <hr>
-  <details>
+  <details<%= " open" if @show.scheduled? %>>
     <summary>Show Settings</summary>
     <%= form_with model: @show, method: :patch do |f| %>
+      <label for="show_name">Show Name</label>
+      <%= f.text_field :name, placeholder: "e.g. Friday Night Karaoke" %>
+
       <label for="show_show_type">Show Type</label>
       <%= f.select :show_type, [["Karaoke", "karaoke"], ["DJ", "dj"]] %>
 
@@ -262,6 +274,11 @@
       <label for="show_max_songs_per_singer">Max Songs per <%= @show.participant_label %></label>
       <%= f.number_field :max_songs_per_singer, min: 1, placeholder: "Unlimited" %>
       <small>Leave blank for unlimited.</small>
+
+      <% if @show.scheduled? %>
+        <label for="show_scheduled_at">Scheduled Date &amp; Time</label>
+        <%= f.datetime_local_field :scheduled_at %>
+      <% end %>
 
       <hr>
 
@@ -290,7 +307,9 @@
   </details>
 
   <hr>
-  <%= button_to "End Show", end_show_show_path(@show), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "End this show? The queue will be closed." } %>
+  <% if @show.active? %>
+    <%= button_to "End Show", end_show_show_path(@show), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "End this show? The queue will be closed." } %>
+  <% end %>
 <% end %>
 
 <p><a href="<%= shows_path %>">Back to shows</a></p>

@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 
   resources :shows, only: [ :index, :new, :create, :show, :update ] do
     patch :end_show, on: :member
+    patch :start_show, on: :member
     resources :queue_entries, only: [ :create, :destroy ] do
       member do
         patch :move

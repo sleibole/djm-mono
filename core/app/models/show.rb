@@ -1,7 +1,7 @@
 class Show < ApplicationRecord
   SHOW_TYPES = %w[karaoke dj].freeze
   ROTATION_STYLES = %w[standard].freeze
-  STATUSES = %w[active ended].freeze
+  STATUSES = %w[scheduled active ended].freeze
 
   belongs_to :catalog
   belongs_to :user
@@ -12,11 +12,12 @@ class Show < ApplicationRecord
   validates :show_type, inclusion: { in: SHOW_TYPES }
   validates :rotation_style, inclusion: { in: ROTATION_STYLES }
   validates :status, inclusion: { in: STATUSES }
-  validates :started_at, presence: true
+  validates :started_at, presence: true, unless: :scheduled?
   validates :slug, presence: true, uniqueness: { scope: :user_id },
                    format: { with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?\z/,
                              message: "must be lowercase letters, numbers, and hyphens" }
 
+  scope :scheduled, -> { where(status: "scheduled") }
   scope :active, -> { where(status: "active") }
   scope :ended, -> { where(status: "ended") }
 
@@ -36,12 +37,24 @@ class Show < ApplicationRecord
     karaoke? ? "Singer" : "Requester"
   end
 
+  def scheduled?
+    status == "scheduled"
+  end
+
   def active?
     status == "active"
   end
 
   def ended?
     status == "ended"
+  end
+
+  def display_name
+    name.presence || catalog.name
+  end
+
+  def start!
+    update!(status: "active", started_at: Time.current)
   end
 
   def end_show!
@@ -82,7 +95,7 @@ class Show < ApplicationRecord
   def generate_slug
     return if slug.present?
 
-    base = catalog&.name&.parameterize.presence || "show-#{SecureRandom.alphanumeric(4).downcase}"
+    base = name&.parameterize.presence || catalog&.name&.parameterize.presence || "show-#{SecureRandom.alphanumeric(4).downcase}"
 
     candidate = base.first(30)
     counter = 1
