@@ -1,0 +1,111 @@
+<% content_for(:title) { "Queue | #{@show.catalog.name} | #{@dj.public_name} | DJMagic.io" } %>
+<% content_for(:head) do %>
+  <meta http-equiv="refresh" content="10">
+<% end %>
+
+<hgroup>
+  <h1><%= @show.catalog.name %></h1>
+  <p>
+    <% if @show.active? %>
+      <mark><%= @show.show_type.capitalize %></mark> &mdash; Live now
+    <% else %>
+      This show has ended.
+    <% end %>
+  </p>
+</hgroup>
+
+<%# --- Now Playing --- %>
+<section>
+  <h3>Now Playing</h3>
+  <% if @now_playing %>
+    <article>
+      <p>
+        <strong><%= @now_playing.participant.name %></strong> &mdash;
+        <%= @now_playing.song_title %> by <%= @now_playing.song_artist %>
+        <% if @now_playing.song_version.present? %>
+          (<%= @now_playing.song_version %>)
+        <% end %>
+      </p>
+    </article>
+  <% else %>
+    <p><small>No one is performing right now.</small></p>
+  <% end %>
+</section>
+
+<%# --- Queue --- %>
+<section>
+  <h3>Queue <small>(<%= @waiting.count %>)</small></h3>
+  <% if @waiting.any? %>
+    <table class="striped" role="grid">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Song</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @waiting.each_with_index do |entry, idx| %>
+          <tr<%= " style=\"font-weight:bold\"".html_safe if @participant && entry.participant_id == @participant.id %>>
+            <td><%= idx + 1 %></td>
+            <td><%= entry.participant.name %></td>
+            <td>
+              <%= entry.song_title %> &mdash; <%= entry.song_artist %>
+              <% if entry.song_version.present? %>
+                <br><small><%= entry.song_version %></small>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p><small>The queue is empty.</small></p>
+  <% end %>
+</section>
+
+<%# --- Your Requests (only visible to the session participant) --- %>
+<% if @participant %>
+  <% if @my_pending.present? %>
+    <section>
+      <h3>Your Pending Requests</h3>
+      <% @my_pending.each do |entry| %>
+        <article>
+          <p>
+            <strong><%= entry.song_title %></strong> &mdash; <%= entry.song_artist %>
+            <% if entry.song_version.present? %>
+              (<%= entry.song_version %>)
+            <% end %>
+          </p>
+          <p><small>Waiting for the host to review your request.</small></p>
+        </article>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @my_rejected.present? %>
+    <section>
+      <h3>Rejected Requests</h3>
+      <% @my_rejected.each do |entry| %>
+        <article>
+          <p>
+            <strong><%= entry.song_title %></strong> &mdash; <%= entry.song_artist %>
+            <% if entry.song_version.present? %>
+              (<%= entry.song_version %>)
+            <% end %>
+          </p>
+          <p><small>
+            <% if entry.rejection_reason.present? %>
+              The host rejected your request because: <%= entry.rejection_reason %>
+            <% else %>
+              The host rejected your request.
+            <% end %>
+          </small></p>
+        </article>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>
+
+<p><a href="<%= audience_show_path(handle: @dj.slug, show_slug: @show.slug) %>">&larr; Request another song</a></p>
+<p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.public_name %></a></p>

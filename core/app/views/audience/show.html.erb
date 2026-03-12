@@ -12,25 +12,27 @@
 </hgroup>
 
 <% if @show.active? %>
-  <%# --- Song Search --- %>
-  <section id="song-search-section">
-    <label for="audience-search-input"><strong>Find a song</strong></label>
+  <%# --- Step 1: Search and select a song --- %>
+  <section id="step-search">
+    <h3>Step 1: Find your song</h3>
+    <p><small>Search the catalog below, then tap a song to select it.</small></p>
     <input type="search" id="audience-search-input" placeholder="Search by title or artist…" autocomplete="off" autofocus>
     <div id="audience-search-results"></div>
     <div id="audience-load-more" hidden>
-      <button type="button" class="outline secondary" onclick="loadMore()">Load more results</button>
+      <button type="button" id="load-more-btn" class="outline secondary">Load more results</button>
     </div>
   </section>
 
-  <%# --- Request Form --- %>
-  <section id="request-form-section" hidden>
+  <%# --- Step 2: Confirm song and enter name --- %>
+  <section id="step-submit" hidden>
+    <h3>Step 2: Enter your name</h3>
     <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-request-form" do %>
       <article id="selected-song-display">
         <p>
           <strong id="audience-selected-title"></strong> &mdash; <span id="audience-selected-artist"></span>
           <span id="audience-selected-version"></span>
         </p>
-        <button type="button" class="outline secondary" onclick="clearSelection()">Change song</button>
+        <button type="button" id="change-song-btn" class="outline secondary">Change song</button>
       </article>
 
       <input type="hidden" name="song_title" id="audience-hidden-title">
@@ -45,15 +47,16 @@
              required autocomplete="off">
       <small>Add a last initial if it's a common name so the host can tell you apart.</small>
 
-      <button type="submit" id="audience-submit-btn">Submit Request</button>
+      <button type="submit">Submit Request</button>
     <% end %>
   </section>
 
   <% if @show.manual_entry_enabled? %>
     <%# --- Manual Entry --- %>
     <section id="manual-entry-section">
-      <details>
+      <details id="manual-entry-details">
         <summary>Can't find your song?</summary>
+        <p><small>Enter the song details below and we'll pass them along to the host.</small></p>
         <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-manual-form" do %>
           <label for="manual-title">Song title</label>
           <input type="text" name="song_title" id="manual-title" placeholder="Song title" required>
@@ -67,7 +70,7 @@
                  value="<%= @participant_name %>"
                  required autocomplete="off">
 
-          <button type="submit">Submit Manual Request</button>
+          <button type="submit">Submit Request</button>
         <% end %>
       </details>
     </section>
@@ -88,8 +91,8 @@
     var searchInput = document.getElementById("audience-search-input");
     var searchResults = document.getElementById("audience-search-results");
     var loadMoreBtn = document.getElementById("audience-load-more");
-    var requestSection = document.getElementById("request-form-section");
-    var searchSection = document.getElementById("song-search-section");
+    var stepSearch = document.getElementById("step-search");
+    var stepSubmit = document.getElementById("step-submit");
 
     var searchTimer = null;
     var currentOffset = 0;
@@ -112,6 +115,14 @@
       }, 300);
     });
 
+    document.getElementById("load-more-btn").addEventListener("click", function() {
+      if (currentQuery) performSearch(currentQuery, currentOffset, true);
+    });
+
+    document.getElementById("change-song-btn").addEventListener("click", function() {
+      clearSelection();
+    });
+
     function performSearch(query, offset, append) {
       fetch(searchUrl + "?q=" + encodeURIComponent(query) + "&limit=" + pageSize + "&offset=" + offset)
         .then(function(r) { return r.json(); })
@@ -126,7 +137,7 @@
 
           var html = append ? "" : '<table class="striped" role="grid"><tbody>';
           data.songs.forEach(function(song) {
-            html += '<tr style="cursor:pointer" onclick=\'selectSong(' + JSON.stringify(song).replace(/'/g, "&#39;") + '\'>';
+            html += '<tr style="cursor:pointer" data-song="' + btoa(JSON.stringify(song)) + '">';
             html += '<td>' + escapeHtml(song.title) + '</td>';
             html += '<td>' + escapeHtml(song.artist) + '</td>';
             if (song.version) html += '<td><small>' + escapeHtml(song.version) + '</small></td>';
@@ -141,6 +152,8 @@
             searchResults.innerHTML = html;
           }
 
+          bindSongRows();
+
           currentOffset = offset + data.songs.length;
           loadMoreBtn.hidden = (data.songs.length < pageSize);
         })
@@ -150,11 +163,17 @@
         });
     }
 
-    window.loadMore = function() {
-      if (currentQuery) performSearch(currentQuery, currentOffset, true);
-    };
+    function bindSongRows() {
+      searchResults.querySelectorAll("tr[data-song]").forEach(function(tr) {
+        if (tr._bound) return;
+        tr._bound = true;
+        tr.addEventListener("click", function() {
+          selectSong(JSON.parse(atob(this.dataset.song)));
+        });
+      });
+    }
 
-    window.selectSong = function(song) {
+    function selectSong(song) {
       document.getElementById("audience-hidden-title").value = song.title;
       document.getElementById("audience-hidden-artist").value = song.artist || "";
       document.getElementById("audience-hidden-version").value = song.version || "";
@@ -165,24 +184,28 @@
       var versionSpan = document.getElementById("audience-selected-version");
       versionSpan.textContent = song.version ? "(" + song.version + ")" : "";
 
-      searchSection.hidden = true;
-      requestSection.hidden = false;
+      stepSearch.hidden = true;
+      stepSubmit.hidden = false;
+      var manualSection = document.getElementById("manual-entry-section");
+      if (manualSection) manualSection.hidden = true;
       document.getElementById("participant_name").focus();
-    };
+    }
 
-    window.clearSelection = function() {
+    function clearSelection() {
       document.getElementById("audience-hidden-title").value = "";
       document.getElementById("audience-hidden-artist").value = "";
       document.getElementById("audience-hidden-version").value = "";
       document.getElementById("audience-hidden-external-id").value = "";
 
-      requestSection.hidden = true;
-      searchSection.hidden = false;
+      stepSubmit.hidden = true;
+      stepSearch.hidden = false;
+      var manualSection = document.getElementById("manual-entry-section");
+      if (manualSection) manualSection.hidden = false;
       searchInput.value = "";
       searchResults.innerHTML = "";
       loadMoreBtn.hidden = true;
       searchInput.focus();
-    };
+    }
 
     function escapeHtml(text) {
       var d = document.createElement("div");

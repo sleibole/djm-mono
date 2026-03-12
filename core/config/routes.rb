@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   scope "dj/:handle", controller: :audience do
     get  "/",                          action: :dj_profile,     as: :dj_profile
     get  "shows/:show_slug",           action: :show,           as: :audience_show
+    get  "shows/:show_slug/queue",     action: :queue,          as: :audience_queue
     post "shows/:show_slug/requests",  action: :create_request, as: :audience_request
   end
 

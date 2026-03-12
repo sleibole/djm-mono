@@ -2,7 +2,7 @@ class AudienceController < ApplicationController
   layout "audience"
 
   before_action :set_dj
-  before_action :set_show, only: [ :show, :create_request ]
+  before_action :set_show, only: [ :show, :queue, :create_request ]
 
   def dj_profile
     @active_shows = @dj.shows.active.includes(:catalog).order(started_at: :desc)
@@ -11,6 +11,16 @@ class AudienceController < ApplicationController
   def show
     @songs_app_url = @show.catalog.songs_app_url
     @participant_name = session_participant&.name
+  end
+
+  def queue
+    @now_playing = @show.now_playing_entry
+    @waiting = @show.waiting_entries.includes(:participant)
+    @participant = session_participant
+    if @participant
+      @my_pending = @show.queue_entries.where(participant: @participant, status: "pending")
+      @my_rejected = @show.queue_entries.where(participant: @participant, status: "rejected")
+    end
   end
 
   def create_request
@@ -55,7 +65,7 @@ class AudienceController < ApplicationController
       message = @show.approval_required? ?
         "Your request has been submitted! The host will review it shortly." :
         "You've been added to the queue!"
-      redirect_to audience_show_path(handle: @dj.slug, show_slug: @show.slug), notice: message
+      redirect_to audience_queue_path(handle: @dj.slug, show_slug: @show.slug), notice: message
     else
       redirect_to audience_show_path(handle: @dj.slug, show_slug: @show.slug),
                   alert: "Could not submit request: #{entry.errors.full_messages.to_sentence}"

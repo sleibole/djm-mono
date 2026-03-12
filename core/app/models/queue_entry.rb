@@ -42,7 +42,7 @@ class QueueEntry < ApplicationRecord
     update!(status: "waiting", position: show.next_position)
   end
 
-  def reject!
-    update!(status: "rejected")
+  def reject!(reason = nil)
+    update!(status: "rejected", rejection_reason: reason.presence)
   end
 end

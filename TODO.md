@@ -43,6 +43,13 @@ Tracked improvements, enhancements, and ideas.
 - [ ] Fairness enforcement (no repeats, no line-cutting)
 - [ ] Cleanup stale participant records (auto-delete after 2 weeks of inactivity)
 
+## Shows
+
+- [ ] Allow DJs to toggle "require approval" during show creation (currently only configurable via show settings after creation)
+- [ ] Allow creating shows ahead of time (scheduled, not yet live)
+- [ ] Allow naming shows (currently uses catalog name as the display title)
+- [ ] Rich text event description for audience-facing show pages (ActionText?)
+
 ## UI / UX
 
 - [x] Make navbar collapse to a hamburger menu on small screens

@@ -51,41 +51,56 @@
 <% end %>
 
 <% if @show.active? %>
-  <%# --- Pending Requests --- %>
-  <% if @show.approval_required? && @pending.any? %>
-    <section id="pending-requests">
-      <h2>Pending Requests <small>(<%= @pending.count %>)</small></h2>
-      <table class="striped" role="grid">
-        <thead>
-          <tr>
-            <th><%= @show.participant_label %></th>
-            <th>Song</th>
-            <th>Submitted</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @pending.each do |entry| %>
+  <%# --- Pending Requests (polls for updates) --- %>
+  <%= turbo_frame_tag "pending-requests", data: { controller: "poll", poll_interval_value: 10000, poll_src_value: show_path(@show) } do %>
+    <% if @show.approval_required? && @pending.any? %>
+      <section id="pending-requests">
+        <h2>Pending Requests <small>(<%= @pending.count %>)</small></h2>
+        <table class="striped" role="grid">
+          <thead>
             <tr>
-              <td><%= entry.participant.name %></td>
-              <td>
-                <%= entry.song_title %> &mdash; <%= entry.song_artist %>
-                <% if entry.song_version.present? %>
-                  <br><small><%= entry.song_version %></small>
-                <% end %>
-              </td>
-              <td><small><%= entry.created_at.strftime("%l:%M %p") %></small></td>
-              <td>
-                <div role="group">
-                  <%= button_to "Approve", approve_show_queue_entry_path(@show, entry), method: :patch %>
-                  <%= button_to "Reject", reject_show_queue_entry_path(@show, entry), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "Reject request from #{entry.participant.name}?" } %>
-                </div>
-              </td>
+              <th><%= @show.participant_label %></th>
+              <th>Song</th>
+              <th>Submitted</th>
+              <th></th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </section>
+          </thead>
+          <tbody>
+            <% @pending.each do |entry| %>
+              <tr>
+                <td><%= entry.participant.name %></td>
+                <td>
+                  <%= entry.song_title %> &mdash; <%= entry.song_artist %>
+                  <% if entry.song_version.present? %>
+                    <br><small><%= entry.song_version %></small>
+                  <% end %>
+                </td>
+                <td><small><%= entry.created_at.strftime("%l:%M %p") %></small></td>
+                <td>
+                  <div style="display: flex; gap: 0.25rem;">
+                    <%= button_to approve_show_queue_entry_path(@show, entry), method: :patch, title: "Approve", style: "background: #2e7d32; border-color: #2e7d32; padding: 0; width: 2rem; height: 2rem; color: #fff; font-size: 1rem; line-height: 1; margin: 0;" do %>✓<% end %>
+                    <button type="button" title="Reject" style="background: #c62828; border-color: #c62828; padding: 0; width: 2rem; height: 2rem; color: #fff; font-size: 1rem; line-height: 1; margin: 0;" onclick="document.getElementById('reject-dialog-<%= entry.id %>').showModal()">✕</button>
+                  </div>
+                  <dialog id="reject-dialog-<%= entry.id %>">
+                    <article>
+                      <h3>Reject request from <%= entry.participant.name %>?</h3>
+                      <p><strong><%= entry.song_title %></strong> &mdash; <%= entry.song_artist %></p>
+                      <%= form_with url: reject_show_queue_entry_path(@show, entry), method: :patch do %>
+                        <textarea name="rejection_reason" placeholder="Reason (optional)" rows="2"></textarea>
+                        <div role="group">
+                          <button type="submit" class="btn-danger">Reject</button>
+                          <button type="button" class="secondary" onclick="document.getElementById('reject-dialog-<%= entry.id %>').close()">Cancel</button>
+                        </div>
+                      <% end %>
+                    </article>
+                  </dialog>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </section>
+    <% end %>
   <% end %>
 
   <%# --- Now Playing --- %>

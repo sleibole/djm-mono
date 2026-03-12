@@ -76,7 +76,7 @@ class QueueEntriesController < ApplicationController
   end
 
   def reject
-    @entry.reject!
+    @entry.reject!(params[:rejection_reason])
     redirect_to @show, notice: "Request from #{@entry.participant.name} rejected."
   end
 

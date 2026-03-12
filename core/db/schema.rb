@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_10_233333) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_130347) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -50,6 +50,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_233333) do
     t.integer "participant_id", null: false
     t.datetime "performed_at"
     t.integer "position", null: false
+    t.string "rejection_reason"
     t.integer "show_id", null: false
     t.string "song_artist", null: false
     t.string "song_external_id"
