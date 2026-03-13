@@ -21,7 +21,7 @@
 <% if @show.active? && current_user.slug.present? %>
   <%# --- Share / QR Codes --- %>
   <section id="share-section">
-    <details>
+    <details class="section-panel">
       <summary>Share with your audience</summary>
       <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
         <div>
@@ -232,7 +232,7 @@
 <% end %>
 
 <% if @completed.any? %>
-  <details id="completed-songs">
+  <details id="completed-songs" class="section-panel">
     <summary>Completed (<%= @completed.count %>)</summary>
     <table class="striped" role="grid">
       <thead>
@@ -258,8 +258,7 @@
 <% end %>
 
 <% if @show.active? || @show.scheduled? %>
-  <hr>
-  <details<%= " open" if @show.scheduled? %>>
+  <details class="section-panel"<%= " open" if @show.scheduled? %>>
     <summary>Show Settings</summary>
     <%= form_with model: @show, method: :patch do |f| %>
       <label for="show_name">Show Name</label>
@@ -306,7 +305,6 @@
     <% end %>
   </details>
 
-  <hr>
   <% if @show.active? %>
     <%= button_to "End Show", end_show_show_path(@show), method: :patch, class: "btn-danger outline", data: { turbo_confirm: "End this show? The queue will be closed." } %>
   <% end %>

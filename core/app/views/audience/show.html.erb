@@ -61,7 +61,7 @@
   <% if @show.manual_entry_enabled? %>
     <%# --- Manual Entry --- %>
     <section id="manual-entry-section">
-      <details id="manual-entry-details">
+      <details id="manual-entry-details" class="section-panel">
         <summary>Can't find your song?</summary>
         <p><small>Enter the song details below and we'll pass them along to the host.</small></p>
         <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-manual-form" do %>

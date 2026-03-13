@@ -123,6 +123,15 @@ header nav form input[type="submit"] {
   }
 }
 
+/* --- Collapsible section panel --- */
+
+details.section-panel {
+  border-top: 1px solid var(--pico-muted-border-color);
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  padding-block: 0.25rem;
+  margin-block: 1rem;
+}
+
 /* --- Danger button --- */
 
 .btn-danger,

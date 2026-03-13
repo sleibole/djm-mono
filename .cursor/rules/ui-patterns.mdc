@@ -1,0 +1,19 @@
+---
+description: UI conventions for views using Pico.css
+alwaysApply: true
+---
+
+# UI Patterns
+
+## Collapsible Sections
+
+All `<details>` elements should use the `section-panel` CSS class. This adds gray top/bottom borders to the `<summary>`, making it visually distinct and obviously clickable.
+
+```erb
+<details class="section-panel">
+  <summary>Section Title</summary>
+  ...content...
+</details>
+```
+
+Do not use `<hr>` tags to visually separate `<details>` elements -- the `section-panel` borders handle this.

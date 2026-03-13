@@ -7,7 +7,7 @@
   <div id="search-results"></div>
 </section>
 
-<details id="upload-section" open>
+<details id="upload-section" class="section-panel" open>
   <summary>Upload CSV</summary>
   <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
 
@@ -20,8 +20,7 @@
   <div id="upload-feedback" role="status" hidden></div>
 </details>
 
-<hr>
-<details id="settings-section">
+<details id="settings-section" class="section-panel">
   <summary>Settings</summary>
   <%= form_with model: @catalog, method: :patch do |f| %>
     <label for="variant_display">Show selector for song variants</label>
@@ -33,7 +32,6 @@
     <%= f.submit "Save", class: "secondary" %>
   <% end %>
 </details>
-<hr>
 
 <section id="catalog-status-section" hidden>
   <div id="catalog-status"></div>
