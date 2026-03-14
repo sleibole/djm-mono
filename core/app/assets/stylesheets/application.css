@@ -201,6 +201,14 @@ details.section-panel > summary::after {
   --pico-background-color: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
 }
 
+/* --- QR codes (need white background for dark themes) --- */
+
+.qr-code {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
 /* --- Tab toggle group --- */
 
 .tab-group {
@@ -397,4 +405,225 @@ details.section-panel > summary::after {
 
 .reddit-link i {
   font-size: 1.5rem;
+}
+
+/* ===================================================================
+   Queue Display (venue monitor)
+   =================================================================== */
+
+.display-layout {
+  margin: 0;
+  padding: 2rem 3rem;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.display-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: calc(100vh - 4rem);
+}
+
+.display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--pico-muted-border-color);
+}
+
+.display-header-info h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.display-header-info p {
+  font-size: 1.1rem;
+  margin-bottom: 0;
+  color: var(--pico-muted-color);
+}
+
+.display-header-info mark {
+  font-size: 0.9rem;
+}
+
+.display-dj-name {
+  margin-left: 0.5rem;
+}
+
+.display-qr {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.display-qr-svg {
+  width: 120px;
+  height: 120px;
+}
+
+.display-qr small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--pico-muted-color);
+  font-size: 0.8rem;
+}
+
+.display-now-playing {
+  padding: 1.5rem 2rem;
+  border-radius: var(--pico-border-radius);
+  background: color-mix(in srgb, var(--pico-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pico-primary) 30%, transparent);
+}
+
+.display-now-playing h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+  color: var(--pico-primary);
+}
+
+.display-now-playing h2 i {
+  margin-right: 0.5rem;
+}
+
+.display-now-playing-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+
+.display-song-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.display-song-artist {
+  font-size: 1.6rem;
+  color: var(--pico-muted-color);
+}
+
+.display-song-artist::before {
+  content: "by ";
+}
+
+.display-song-version {
+  font-size: 1.2rem;
+  color: var(--pico-muted-color);
+}
+
+.display-performer {
+  font-size: 1.4rem;
+  width: 100%;
+  color: var(--pico-primary);
+}
+
+.display-performer::before {
+  content: "\f007  ";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 1rem;
+  margin-right: 0.25rem;
+}
+
+.display-empty {
+  font-size: 1.3rem;
+  color: var(--pico-muted-color);
+  margin: 0;
+}
+
+.display-queue {
+  flex: 1;
+  overflow: hidden;
+}
+
+.display-queue h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.display-queue h2 small {
+  color: var(--pico-muted-color);
+}
+
+.display-queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.4rem;
+}
+
+.display-queue-table tbody tr {
+  border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.display-queue-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--pico-color) 4%, transparent);
+}
+
+.display-queue-table td {
+  padding: 0.6rem 0.75rem;
+  vertical-align: middle;
+}
+
+.display-queue-position {
+  width: 3rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--pico-muted-color);
+  font-size: 1.2rem;
+}
+
+.display-queue-name {
+  font-weight: 600;
+  white-space: nowrap;
+  width: 1%;
+  padding-right: 1.5rem !important;
+}
+
+.display-queue-artist {
+  color: var(--pico-muted-color);
+}
+
+.display-queue-version {
+  color: var(--pico-muted-color);
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .display-layout {
+    padding: 1rem 1.5rem;
+  }
+
+  .display-page {
+    height: auto;
+    min-height: calc(100vh - 2rem);
+  }
+
+  .display-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .display-header-info h1 {
+    font-size: 1.8rem;
+  }
+
+  .display-song-title {
+    font-size: 1.6rem;
+  }
+
+  .display-song-artist {
+    font-size: 1.2rem;
+  }
+
+  .display-performer {
+    font-size: 1.1rem;
+  }
+
+  .display-queue-table {
+    font-size: 1.1rem;
+  }
 }

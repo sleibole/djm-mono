@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+  <head>
+    <title><%= content_for(:title) || "Queue Display | DJMagic.io" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="refresh" content="8">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "pico.min", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <script src="https://kit.fontawesome.com/cade1152b0.js" crossorigin="anonymous" defer></script>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="display-layout">
+    <%= yield %>
+  </body>
+</html>

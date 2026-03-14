@@ -1,0 +1,67 @@
+<% content_for(:title) { "#{@show.display_name} | #{@dj.public_name} | DJMagic.io" } %>
+
+<div class="display-page">
+  <header class="display-header">
+    <div class="display-header-info">
+      <h1><%= @show.display_name %></h1>
+      <p>
+        <mark><%= @show.show_type.capitalize %></mark>
+        <span class="display-dj-name"><%= @dj.public_name %></span>
+        <% unless @show.active? %>
+          <span>&mdash; This show has ended.</span>
+        <% end %>
+      </p>
+    </div>
+    <div class="display-qr">
+      <%= raw RQRCode::QRCode.new(@show.public_url).as_svg(
+        module_size: 3,
+        standalone: true,
+        use_path: true,
+        viewbox: true,
+        svg_attributes: { class: "qr-code display-qr-svg" }
+      ) %>
+      <small>Scan to request a song</small>
+    </div>
+  </header>
+
+  <section class="display-now-playing">
+    <h2><i class="fa-solid fa-music"></i> Now Playing</h2>
+    <% if @now_playing %>
+      <div class="display-now-playing-content">
+        <span class="display-song-title"><%= @now_playing.song_title %></span>
+        <span class="display-song-artist"><%= @now_playing.song_artist %></span>
+        <% if @now_playing.song_version.present? %>
+          <span class="display-song-version"><%= @now_playing.song_version %></span>
+        <% end %>
+        <span class="display-performer"><%= @now_playing.participant.name %></span>
+      </div>
+    <% else %>
+      <p class="display-empty">No one is performing right now.</p>
+    <% end %>
+  </section>
+
+  <section class="display-queue">
+    <h2>Up Next <small>(<%= @waiting.count %>)</small></h2>
+    <% if @waiting.any? %>
+      <table class="display-queue-table">
+        <tbody>
+          <% @waiting.each_with_index do |entry, idx| %>
+            <tr>
+              <td class="display-queue-position"><%= idx + 1 %></td>
+              <td class="display-queue-name"><%= entry.participant.name %></td>
+              <td class="display-queue-song">
+                <%= entry.song_title %>
+                <span class="display-queue-artist">&mdash; <%= entry.song_artist %></span>
+                <% if entry.song_version.present? %>
+                  <span class="display-queue-version">(<%= entry.song_version %>)</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="display-empty">The queue is empty &mdash; scan the QR code to request a song!</p>
+    <% end %>
+  </section>
+</div>

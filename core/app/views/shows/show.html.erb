@@ -19,7 +19,10 @@
 <% end %>
 
 <% if @show.active? && current_user.slug.present? %>
-  <button type="button" class="outline secondary" onclick="document.getElementById('share-dialog').showModal()"><i class="fa-solid fa-share-nodes"></i> Share</button>
+  <div role="group" style="display: inline-flex; gap: 0.5rem;">
+    <button type="button" class="outline secondary" onclick="document.getElementById('share-dialog').showModal()"><i class="fa-solid fa-share-nodes"></i> Share</button>
+    <a href="<%= audience_display_path(handle: current_user.slug, show_slug: @show.slug) %>" class="outline secondary" role="button" target="_blank"><i class="fa-solid fa-tv"></i> Display</a>
+  </div>
   <dialog id="share-dialog">
     <article>
       <header>
@@ -34,7 +37,7 @@
             standalone: true,
             use_path: true,
             viewbox: true,
-            svg_attributes: { style: "max-width: 200px; width: 100%;" }
+            svg_attributes: { class: "qr-code", style: "max-width: 200px; width: 100%;" }
           ) %>
           <p><small><code id="show-url"><%= @show.public_url %></code></small></p>
           <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('show-url').textContent)"><i class="fa-solid fa-copy"></i> Copy show link</button>
@@ -46,7 +49,7 @@
             standalone: true,
             use_path: true,
             viewbox: true,
-            svg_attributes: { style: "max-width: 200px; width: 100%;" }
+            svg_attributes: { class: "qr-code", style: "max-width: 200px; width: 100%;" }
           ) %>
           <p><small><code id="profile-url"><%= @show.dj_profile_url %></code></small></p>
           <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('profile-url').textContent)"><i class="fa-solid fa-copy"></i> Copy profile link</button>

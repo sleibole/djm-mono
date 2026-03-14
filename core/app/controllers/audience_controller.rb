@@ -2,7 +2,7 @@ class AudienceController < ApplicationController
   layout "audience"
 
   before_action :set_dj
-  before_action :set_show, only: [ :show, :queue, :create_request ]
+  before_action :set_show, only: [ :show, :queue, :display, :create_request ]
 
   def dj_profile
     @active_shows = @dj.shows.active.includes(:catalog).order(started_at: :desc)
@@ -22,6 +22,12 @@ class AudienceController < ApplicationController
       @my_pending = @show.queue_entries.where(participant: @participant, status: "pending")
       @my_rejected = @show.queue_entries.where(participant: @participant, status: "rejected")
     end
+  end
+
+  def display
+    @now_playing = @show.now_playing_entry
+    @waiting = @show.waiting_entries.includes(:participant)
+    render layout: "display"
   end
 
   def create_request
