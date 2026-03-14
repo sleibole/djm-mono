@@ -29,24 +29,13 @@ detail (explained below).
 
 ## Columns
 
-  -----------------------------------------------------------------------
-  Column            Required?                Description
-  ----------------- ------------------------ ----------------------------
-  **title**         Yes                      The song title
-
-  **artist**        Yes                      The performer or artist
-
-  **version**       No                       Version of the song (useful
-                                             for karaoke): Original,
-                                             Acoustic, Duet, Key +2, etc.
-
-  **album**         No                       Album name (for display
-                                             only)
-
-  **id**            No                       Your own identifier if you
-                                             track songs with an external
-                                             ID
-  -----------------------------------------------------------------------
+| Column      | Required? | Description                                                                  |
+|-------------|-----------|------------------------------------------------------------------------------|
+| **title**   | Yes       | The song title                                                               |
+| **artist**  | Yes       | The performer or artist                                                      |
+| **version** | No        | Version of the song (useful for karaoke): Original, Acoustic, Duet, Key +2, etc. |
+| **album**   | No        | Album name (for display only)                                                |
+| **id**      | No        | Your own identifier if you track songs with an external ID                   |
 
 ### Example with all columns
 
@@ -137,12 +126,12 @@ Common version labels include:
 
 ## Limits
 
-  Resource                                 Limit
-  ---------------------------------------- ------------
-  Maximum file size                        100 MB
-  Maximum rows per catalog                 1,000,000
-  Maximum catalogs per account             100
-  Maximum total rows across all catalogs   10,000,000
+| Resource                               | Limit      |
+|----------------------------------------|------------|
+| Maximum file size                      | 100 MB     |
+| Maximum rows per catalog               | 1,000,000  |
+| Maximum catalogs per account           | 100        |
+| Maximum total rows across all catalogs | 10,000,000 |
 
 ------------------------------------------------------------------------
 
