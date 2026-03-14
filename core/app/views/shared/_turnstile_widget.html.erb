@@ -1,0 +1,28 @@
+<%
+  sitekey = local_assigns[:sitekey] || ENV['TURNSTILE_SITE_KEY']
+  theme = local_assigns[:theme] || 'auto'
+  size = local_assigns[:size] || 'normal'
+  callback = local_assigns[:callback]
+  error_callback = local_assigns[:error_callback]
+  appearance = local_assigns[:appearance] || 'always'
+  execution = local_assigns[:execution] || 'render'
+-%>
+
+<% if sitekey.blank? %>
+  <% if Rails.env.development? %>
+    <div style="padding: 1rem; background: #f0f0f0; border: 1px solid #ccc; margin: 1rem 0;">
+      <small>Turnstile widget not configured (TURNSTILE_SITE_KEY missing)</small>
+    </div>
+  <% end %>
+<% else %>
+  <div
+    class="cf-turnstile"
+    data-sitekey="<%= sitekey %>"
+    data-theme="<%= theme %>"
+    data-size="<%= size %>"
+    <% if callback %>data-callback="<%= callback %>"<% end %>
+    <% if error_callback %>data-error-callback="<%= error_callback %>"<% end %>
+    data-appearance="<%= appearance %>"
+    data-execution="<%= execution %>"
+  ></div>
+<% end %>

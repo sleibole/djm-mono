@@ -1,4 +1,8 @@
 class MagicLinksController < ApplicationController
+  include TurnstileVerification
+
+  before_action :verify_turnstile!, only: [:create]
+
   rate_limit to: 5, within: 1.hour, only: :create,
              by: -> { params[:email].to_s.downcase.strip },
              with: -> { redirect_to login_path, notice: "Check your email for a login link." }

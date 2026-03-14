@@ -6,6 +6,7 @@
   <%= form_with url: magic_links_path do |f| %>
     <label for="magic_email"><i class="fa-solid fa-envelope"></i> Email</label>
     <%= f.email_field :email, id: "magic_email", placeholder: "you@example.com", required: true, autofocus: true %>
+    <%= render 'shared/turnstile_widget' %>
     <%= f.submit "Send Magic Link" %>
   <% end %>
 </section>
