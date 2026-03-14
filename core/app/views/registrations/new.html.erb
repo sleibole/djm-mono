@@ -1,5 +1,12 @@
 <h1>Sign up</h1>
 
+<article style="background: var(--pico-primary-background); color: var(--pico-primary-inverse); border-radius: 8px; padding: 1.5rem; text-align: center;">
+  <p style="margin: 0; font-size: 1.1rem;">
+    <strong><i class="fa-solid fa-flask"></i> We're in beta!</strong>
+    Sign up now and get <strong>3 months free</strong> when we launch.
+  </p>
+</article>
+
 <%= form_with url: magic_links_path do |f| %>
   <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
   <%= f.email_field :email, placeholder: "Enter your email address...", required: true, autofocus: true %>
