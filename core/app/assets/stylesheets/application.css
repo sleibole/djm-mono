@@ -209,6 +209,54 @@ details.section-panel > summary::after {
   padding: 0.5rem;
 }
 
+/* --- Share dialog --- */
+
+.share-dialog-body {
+  text-align: center;
+}
+
+.share-dialog-body h4 {
+  font-size: 1.5rem;
+}
+
+.share-dialog-body [role="group"] {
+  justify-content: center;
+}
+
+@media print {
+  body > *:not(#print-area) {
+    display: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #print-area {
+    display: block !important;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #000;
+    background: #fff;
+  }
+
+  #print-area h4 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: #000;
+  }
+
+  #print-area .qr-code {
+    max-width: 300px;
+    margin: 1rem auto;
+  }
+
+  #print-area code {
+    font-size: 1.2rem;
+    color: #000;
+  }
+}
+
 /* --- Tab toggle group --- */
 
 .tab-group {
@@ -405,6 +453,45 @@ details.section-panel > summary::after {
 
 .reddit-link i {
   font-size: 1.5rem;
+}
+
+/* --- Audience queue: "you are here" highlight --- */
+
+.queue-you {
+  background: color-mix(in srgb, var(--pico-primary) 12%, transparent);
+  font-weight: 600;
+  position: relative;
+}
+
+.queue-you td:first-child {
+  border-left: 3px solid var(--pico-primary);
+}
+
+.queue-position-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--pico-border-radius);
+  background: color-mix(in srgb, var(--pico-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pico-primary) 30%, transparent);
+  margin-bottom: var(--pico-spacing);
+}
+
+.queue-position-callout .position-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--pico-primary);
+  line-height: 1;
+}
+
+.queue-position-callout p {
+  margin: 0;
+}
+
+.now-playing-you {
+  border-color: var(--pico-primary);
+  background: color-mix(in srgb, var(--pico-primary) 12%, transparent);
 }
 
 /* ===================================================================

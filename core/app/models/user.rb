@@ -60,6 +60,10 @@ class User < ApplicationRecord
     display_name.presence || slug
   end
 
+  def profile_url(host: ENV.fetch("CORE_APP_URL", "http://localhost:3000"))
+    "#{host}/dj/#{slug}" if slug.present?
+  end
+
   def ensure_slug!
     return slug if slug.present?
 

@@ -1,7 +1,10 @@
 <% content_for(:title) { "Queue | #{@show.display_name} | #{@dj.public_name} | DJMagic.io" } %>
-<% content_for(:head) do %>
-  <meta http-equiv="refresh" content="10">
-<% end %>
+
+<div class="queue-page"
+     data-controller="poll"
+     data-poll-src-value="<%= request.path %>"
+     data-poll-selector-value=".queue-page"
+     data-poll-interval-value="10000">
 
 <hgroup>
   <h1><%= @show.display_name %></h1>
@@ -18,9 +21,12 @@
 <section>
   <h3>Now Playing</h3>
   <% if @now_playing %>
-    <article>
+    <% now_playing_is_you = @participant && @now_playing.participant_id == @participant.id %>
+    <article<%= " class=\"now-playing-you\"".html_safe if now_playing_is_you %>>
       <p>
-        <strong><%= @now_playing.participant.name %></strong> &mdash;
+        <strong><%= @now_playing.participant.name %></strong>
+        <%= "(That's you!)" if now_playing_is_you %>
+        &mdash;
         <%= @now_playing.song_title %> by <%= @now_playing.song_artist %>
         <% if @now_playing.song_version.present? %>
           (<%= @now_playing.song_version %>)
@@ -35,6 +41,26 @@
 <%# --- Queue --- %>
 <section>
   <h3>Queue <small>(<%= @waiting.count %>)</small></h3>
+
+  <% if @participant %>
+    <% my_positions = @waiting.each_with_index.select { |e, _| e.participant_id == @participant.id }.map { |_, i| i + 1 } %>
+    <% if my_positions.any? %>
+      <div class="queue-position-callout">
+        <span class="position-number">#<%= my_positions.first %></span>
+        <p>
+          <strong>You're in the queue!</strong><br>
+          <small>
+            <% if my_positions.size == 1 %>
+              You are number <%= my_positions.first %> of <%= @waiting.count %>.
+            <% else %>
+              Your spots: <%= my_positions.map { |p| "##{p}" }.join(", ") %> of <%= @waiting.count %>.
+            <% end %>
+          </small>
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+
   <% if @waiting.any? %>
     <table class="striped" role="grid">
       <thead>
@@ -46,7 +72,8 @@
       </thead>
       <tbody>
         <% @waiting.each_with_index do |entry, idx| %>
-          <tr<%= " style=\"font-weight:bold\"".html_safe if @participant && entry.participant_id == @participant.id %>>
+          <% is_you = @participant && entry.participant_id == @participant.id %>
+          <tr<%= " class=\"queue-you\"".html_safe if is_you %>>
             <td><%= idx + 1 %></td>
             <td><%= entry.participant.name %></td>
             <td>
@@ -109,3 +136,5 @@
 
 <p><a href="<%= audience_show_path(handle: @dj.slug, show_slug: @show.slug) %>">&larr; Request another song</a></p>
 <p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.public_name %></a></p>
+
+</div>

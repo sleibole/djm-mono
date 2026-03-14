@@ -1,6 +1,9 @@
 <% content_for(:title) { "#{@show.display_name} | #{@dj.public_name} | DJMagic.io" } %>
 
-<div class="display-page">
+<div class="display-page"
+     data-controller="poll"
+     data-poll-src-value="<%= request.path %>"
+     data-poll-selector-value=".display-page">
   <header class="display-header">
     <div class="display-header-info">
       <h1><%= @show.display_name %></h1>

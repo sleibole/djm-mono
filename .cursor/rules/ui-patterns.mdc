@@ -34,3 +34,22 @@ Do not use `<details>` for one-time actions like sharing or exporting. Use a but
   </article>
 </dialog>
 ```
+
+## Auto-Refreshing Pages
+
+Do not use `<meta http-equiv="refresh">` to periodically reload a page. A meta refresh triggers a full browser navigation, which causes visible flicker as the entire page goes blank and re-renders from scratch.
+
+Instead, use the `poll` Stimulus controller, which fetches fresh HTML in the background and swaps only the inner content of a wrapper element — no blank screen, no scroll-position reset.
+
+```erb
+<div class="my-page"
+     data-controller="poll"
+     data-poll-src-value="<%= request.path %>"
+     data-poll-selector-value=".my-page"
+     data-poll-interval-value="3000">
+  ...content...
+</div>
+```
+
+- `data-poll-interval-value` is in milliseconds (default 3000).
+- The controller automatically pauses polling while a `<dialog>` inside the element is open.

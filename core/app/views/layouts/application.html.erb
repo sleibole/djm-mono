@@ -25,6 +25,28 @@
         var t = localStorage.getItem("theme");
         if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
       })();
+
+      function copyLink(button, sourceId) {
+        var text = document.getElementById(sourceId).textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          var original = button.innerHTML;
+          button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+          setTimeout(function() { button.innerHTML = original; }, 2000);
+        });
+      }
+
+      function printShareDialog(dialogEl) {
+        var area = document.getElementById("print-area");
+        if (!area) {
+          area = document.createElement("div");
+          area.id = "print-area";
+          area.style.display = "none";
+          document.body.appendChild(area);
+        }
+        var body = dialogEl.querySelector(".share-dialog-body");
+        area.innerHTML = body ? body.innerHTML : "";
+        window.print();
+      }
     </script>
   </head>
 
