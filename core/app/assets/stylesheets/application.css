@@ -123,13 +123,55 @@ header nav form input[type="submit"] {
   }
 }
 
-/* --- Collapsible section panel --- */
+/* --- Collapsible section panel ---
+ *
+ * Pico's default <details> uses a right-aligned chevron that is easy to miss,
+ * and the summary text blends in with body copy. The .section-panel class
+ * overrides this with the standard accordion pattern: left-side rotating
+ * chevron, bolder text, and a hover background.
+ *
+ * Not every expandable section should be a <details>. Consider the purpose:
+ *   - Collapsible content (settings, history, secondary info) -> <details class="section-panel">
+ *   - One-time actions (share, export) -> button + <dialog> modal
+ *   - Alternative input paths (manual entry, password sign-in) -> <details class="section-panel">
+ */
 
 details.section-panel {
   border-top: 1px solid var(--pico-muted-border-color);
   border-bottom: 1px solid var(--pico-muted-border-color);
   padding-block: 0.25rem;
   margin-block: 1rem;
+}
+
+details.section-panel > summary {
+  font-weight: 600;
+  padding-block: 0.75rem;
+  border-radius: var(--pico-border-radius);
+}
+
+details.section-panel > summary:hover {
+  background-color: var(--pico-primary-focus);
+}
+
+details.section-panel > summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--pico-muted-color);
+  border-bottom: 2px solid var(--pico-muted-color);
+  transform: rotate(-45deg);
+  margin-right: 0.75rem;
+  vertical-align: middle;
+  transition: transform var(--pico-transition);
+}
+
+details[open].section-panel > summary::before {
+  transform: rotate(45deg);
+}
+
+details.section-panel > summary::after {
+  display: none;
 }
 
 /* --- Danger button --- */

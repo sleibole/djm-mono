@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Collapsible Sections
 
-All `<details>` elements should use the `section-panel` CSS class. This adds gray top/bottom borders to the `<summary>`, making it visually distinct and obviously clickable.
+Use `<details class="section-panel">` for content that benefits from progressive disclosure: settings, history, secondary info, and alternative input paths. The class provides a left-side rotating chevron, bolder text, hover background, and top/bottom borders.
 
 ```erb
 <details class="section-panel">
@@ -17,3 +17,20 @@ All `<details>` elements should use the `section-panel` CSS class. This adds gra
 ```
 
 Do not use `<hr>` tags to visually separate `<details>` elements -- the `section-panel` borders handle this.
+
+## One-Time Actions (Share, Export, etc.)
+
+Do not use `<details>` for one-time actions like sharing or exporting. Use a button that opens a native `<dialog>` modal instead. This is more discoverable and matches user expectations for actions.
+
+```erb
+<button type="button" class="outline secondary" onclick="document.getElementById('my-dialog').showModal()">Share</button>
+<dialog id="my-dialog">
+  <article>
+    <header>
+      <button type="button" aria-label="Close" rel="prev" onclick="document.getElementById('my-dialog').close()"></button>
+      <h3>Dialog Title</h3>
+    </header>
+    ...content...
+  </article>
+</dialog>
+```

@@ -19,10 +19,13 @@
 <% end %>
 
 <% if @show.active? && current_user.slug.present? %>
-  <%# --- Share / QR Codes --- %>
-  <section id="share-section">
-    <details class="section-panel">
-      <summary>Share with your audience</summary>
+  <button type="button" class="outline secondary" onclick="document.getElementById('share-dialog').showModal()">Share</button>
+  <dialog id="share-dialog">
+    <article>
+      <header>
+        <button type="button" aria-label="Close" rel="prev" onclick="document.getElementById('share-dialog').close()"></button>
+        <h3>Share with your audience</h3>
+      </header>
       <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
         <div>
           <h4>This Show</h4>
@@ -49,8 +52,8 @@
           <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('profile-url').textContent)">Copy profile link</button>
         </div>
       </div>
-    </details>
-  </section>
+    </article>
+  </dialog>
 <% elsif @show.active? && current_user.slug.blank? %>
   <section>
     <p>
