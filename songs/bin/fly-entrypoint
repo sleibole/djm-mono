@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+# Verify LiteFS mount is accessible
+if ! test -d /litefs; then
+  echo "Error: /litefs directory not found"
+  exit 1
+fi
+
+if ! ls /litefs >/dev/null 2>&1; then
+  echo "Error: /litefs not readable by rails user"
+  exit 1
+fi
+
+# Determine node role via LiteFS .primary file
+# absent = we are primary, present = contains primary hostname
+NODE_ROLE="unknown"
+for attempt in $(seq 1 10); do
+  if [ -f /litefs/.primary ]; then
+    NODE_ROLE="REPLICA"
+    break
+  fi
+  if [ "$attempt" -eq 10 ]; then
+    NODE_ROLE="PRIMARY"
+  else
+    sleep 0.3
+  fi
+done
+
+if [ "$NODE_ROLE" = "PRIMARY" ]; then
+  export SOLID_QUEUE_IN_PUMA=true
+fi
+
+echo "Node: ${HOSTNAME} | Region: ${FLY_REGION} | Role: ${NODE_ROLE}"
+
+exec ./bin/puma -C config/puma.rb

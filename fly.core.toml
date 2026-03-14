@@ -1,0 +1,44 @@
+app = "djm-core"
+primary_region = "ord"
+console_command = "/rails/bin/rails console"
+
+[deploy]
+  strategy = "rolling"
+  wait_timeout = "120s"
+
+[build]
+  dockerfile = "Dockerfile.core"
+
+[env]
+  RUBY_YJIT_ENABLE = "1"
+
+[[mounts]]
+  source = "litefs"
+  destination = "/var/lib/litefs"
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = "1GB"
+  auto_extend_size_limit = "5GB"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "60s"
+    method = "GET"
+    path = "/up"
+    protocol = "http"
+
+[[statics]]
+  guest_path = "/rails/public"
+  url_prefix = "/"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

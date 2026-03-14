@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+APP=${1:?"Usage: bin/fly-deploy core|songs"}
+
+case "$APP" in
+  core)  fly deploy -c fly.core.toml ;;
+  songs) fly deploy -c fly.songs.toml ;;
+  *)     echo "Unknown app: $APP. Use 'core' or 'songs'." && exit 1 ;;
+esac
