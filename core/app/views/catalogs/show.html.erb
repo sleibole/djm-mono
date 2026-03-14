@@ -258,10 +258,6 @@
             if (data.song_count != null) {
               songCountEl.textContent = data.song_count.toLocaleString() + " songs";
             }
-            setTimeout(() => {
-              uploadSection.removeAttribute("open");
-              feedback.hidden = true;
-            }, 3000);
           } else if (data.status === "failed") {
             clearInterval(interval);
             feedback.removeAttribute("aria-busy");
