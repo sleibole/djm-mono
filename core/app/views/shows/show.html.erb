@@ -64,7 +64,7 @@
 
 <% if @show.active? %>
   <%# --- Pending Requests (polls for updates) --- %>
-  <div id="pending-requests-container" data-controller="poll" data-poll-interval-value="10000" data-poll-src-value="<%= show_path(@show) %>" data-poll-selector-value="#pending-requests-container">
+  <div id="pending-requests-container" data-controller="poll" data-poll-interval-value="3000" data-poll-src-value="<%= show_path(@show) %>" data-poll-selector-value="#pending-requests-container">
     <% if @show.approval_required? && @pending.any? %>
       <section>
         <h2>Pending Requests <small>(<%= @pending.count %>)</small></h2>

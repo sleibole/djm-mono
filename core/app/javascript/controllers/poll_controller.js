@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = {
-    interval: { type: Number, default: 10000 },
+    interval: { type: Number, default: 3000 },
     src: String,
     selector: String
   }
