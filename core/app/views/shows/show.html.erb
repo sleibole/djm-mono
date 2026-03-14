@@ -19,7 +19,7 @@
 <% end %>
 
 <% if @show.active? && current_user.slug.present? %>
-  <button type="button" class="outline secondary" onclick="document.getElementById('share-dialog').showModal()">Share</button>
+  <button type="button" class="outline secondary" onclick="document.getElementById('share-dialog').showModal()"><i class="fa-solid fa-share-nodes"></i> Share</button>
   <dialog id="share-dialog">
     <article>
       <header>
@@ -37,7 +37,7 @@
             svg_attributes: { style: "max-width: 200px; width: 100%;" }
           ) %>
           <p><small><code id="show-url"><%= @show.public_url %></code></small></p>
-          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('show-url').textContent)">Copy show link</button>
+          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('show-url').textContent)"><i class="fa-solid fa-copy"></i> Copy show link</button>
         </div>
         <div>
           <h4>Your Profile</h4>
@@ -49,7 +49,7 @@
             svg_attributes: { style: "max-width: 200px; width: 100%;" }
           ) %>
           <p><small><code id="profile-url"><%= @show.dj_profile_url %></code></small></p>
-          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('profile-url').textContent)">Copy profile link</button>
+          <button type="button" class="outline secondary" onclick="navigator.clipboard.writeText(document.getElementById('profile-url').textContent)"><i class="fa-solid fa-copy"></i> Copy profile link</button>
         </div>
       </div>
     </article>
@@ -191,7 +191,7 @@
     <h2>Add to Queue</h2>
     <%= form_with url: show_queue_entries_path(@show), method: :post, id: "add-queue-form" do %>
       <fieldset>
-        <label for="participant_name"><%= @show.participant_label %></label>
+        <label for="participant_name"><i class="fa-solid fa-user"></i> <%= @show.participant_label %></label>
         <input type="text" name="participant_name" id="participant_name" placeholder="<%= @show.participant_label %>'s name" required autocomplete="off" list="participant-suggestions">
         <input type="hidden" name="participant_id" id="participant_id">
         <datalist id="participant-suggestions"></datalist>
@@ -210,7 +210,9 @@
         </div>
 
         <div id="song-manual-mode" hidden>
+          <label for="manual-song-title"><i class="fa-solid fa-music"></i> Song Title</label>
           <input type="text" name="song_title" id="manual-song-title" placeholder="Song title">
+          <label for="manual-song-artist"><i class="fa-solid fa-guitar"></i> Artist</label>
           <input type="text" name="song_artist" id="manual-song-artist" placeholder="Artist">
         </div>
 

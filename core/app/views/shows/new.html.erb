@@ -5,10 +5,10 @@
   <p><a href="<%= new_catalog_path %>" role="button">Create a Catalog</a></p>
 <% else %>
   <%= form_with url: shows_path, method: :post, id: "new-show-form" do |f| %>
-    <label for="show_name">Show Name <small>(optional)</small></label>
+    <label for="show_name"><i class="fa-solid fa-microphone"></i> Show Name <small>(optional)</small></label>
     <input type="text" name="name" id="show_name" placeholder="e.g. Friday Night Karaoke">
 
-    <label for="show_slug">URL Slug <small>(optional &mdash; auto-generated from name)</small></label>
+    <label for="show_slug"><i class="fa-solid fa-link"></i> URL Slug <small>(optional &mdash; auto-generated from name)</small></label>
     <input type="text" name="slug" id="show_slug" placeholder="auto-generated">
 
     <label for="catalog_id">Catalog</label>
@@ -44,7 +44,7 @@
     </fieldset>
 
     <div id="scheduled-at-field" hidden>
-      <label for="scheduled_at">Scheduled Date &amp; Time</label>
+      <label for="scheduled_at"><i class="fa-solid fa-calendar"></i> Scheduled Date &amp; Time</label>
       <input type="datetime-local" name="scheduled_at" id="scheduled_at">
     </div>
 

@@ -1,6 +1,7 @@
 <h1>Sign up</h1>
 
 <%= form_with url: magic_links_path do |f| %>
+  <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
   <%= f.email_field :email, placeholder: "Enter your email address...", required: true, autofocus: true %>
 
   <label for="role">Are you a DJ/KJ or an audience member?</label>

@@ -24,7 +24,7 @@
   <p>This is the name shown to your audience. If not set, your URL slug will be used instead.</p>
 
   <%= form_with url: account_display_name_path, method: :patch do |f| %>
-    <label for="display_name">Display Name</label>
+    <label for="display_name"><i class="fa-solid fa-user"></i> Display Name</label>
     <input type="text" name="display_name" id="display_name" value="<%= current_user.display_name %>"
            placeholder="e.g. DJ Mike" maxlength="50">
     <%= f.submit "Save Display Name", class: "secondary" %>
@@ -40,7 +40,7 @@
   <% end %>
 
   <%= form_with url: account_slug_path, method: :patch do |f| %>
-    <label for="slug">URL Slug</label>
+    <label for="slug"><i class="fa-solid fa-link"></i> URL Slug</label>
     <input type="text" name="slug" id="slug" value="<%= current_user.slug %>"
            placeholder="e.g. djmike" required minlength="3" maxlength="30"
            pattern="[a-z0-9][a-z0-9\-]*[a-z0-9]">
@@ -61,10 +61,10 @@
     <p>You have a password set. You can change it or remove it to use magic links only.</p>
 
     <%= form_with url: account_password_path, method: :patch do |f| %>
-      <label for="password">New Password</label>
+      <label for="password"><i class="fa-solid fa-lock"></i> New Password</label>
       <%= f.password_field :password, id: "password", required: true, minlength: 8 %>
 
-      <label for="password_confirmation">Confirm Password</label>
+      <label for="password_confirmation"><i class="fa-solid fa-lock"></i> Confirm Password</label>
       <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
 
       <%= f.submit "Change Password", class: "secondary" %>
@@ -75,10 +75,10 @@
     <p>No password set. You log in with magic links. You can optionally set a password.</p>
 
     <%= form_with url: account_password_path, method: :patch do |f| %>
-      <label for="password">Password</label>
+      <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
       <%= f.password_field :password, id: "password", required: true, minlength: 8 %>
 
-      <label for="password_confirmation">Confirm Password</label>
+      <label for="password_confirmation"><i class="fa-solid fa-lock"></i> Confirm Password</label>
       <%= f.password_field :password_confirmation, id: "password_confirmation", required: true, minlength: 8 %>
 
       <%= f.submit "Set Password", class: "secondary" %>

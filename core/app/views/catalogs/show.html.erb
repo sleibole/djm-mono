@@ -12,7 +12,7 @@
   <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
 
   <form id="csv-upload-form" enctype="multipart/form-data">
-    <label for="csv_file">CSV File</label>
+    <label for="csv_file"><i class="fa-solid fa-file-arrow-up"></i> CSV File</label>
     <input type="file" name="file" id="csv_file" accept=".csv" required>
     <button type="submit" id="upload-btn">Upload</button>
   </form>
