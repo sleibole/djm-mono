@@ -9,6 +9,7 @@
 
 <details id="upload-section" class="section-panel" open>
   <summary>Upload CSV</summary>
+  <div id="upload-feedback" role="status" hidden></div>
   <p>Upload a CSV file to replace this catalog's songs. The file must include <code>title</code> and <code>artist</code> columns. See the <a href="<%= doc_path('csv-format') %>">CSV format guide</a> for details.</p>
 
   <form id="csv-upload-form" enctype="multipart/form-data">
@@ -16,8 +17,6 @@
     <input type="file" name="file" id="csv_file" accept=".csv" required>
     <button type="submit" id="upload-btn">Upload</button>
   </form>
-
-  <div id="upload-feedback" role="status" hidden></div>
 </details>
 
 <details id="settings-section" class="section-panel">
@@ -33,10 +32,6 @@
   <% end %>
 </details>
 
-<section id="catalog-status-section" hidden>
-  <div id="catalog-status"></div>
-</section>
-
 <p><a href="<%= catalogs_path %>">Back to catalogs</a></p>
 
 <script>
@@ -48,8 +43,6 @@
     const form = document.getElementById("csv-upload-form");
     const btn = document.getElementById("upload-btn");
     const feedback = document.getElementById("upload-feedback");
-    const statusSection = document.getElementById("catalog-status-section");
-    const statusDiv = document.getElementById("catalog-status");
     const uploadSection = document.getElementById("upload-section");
     const settingsSection = document.getElementById("settings-section");
     const uploadUrl = "<%= @songs_upload_url %>";
@@ -81,13 +74,12 @@
           if (data.status === "processing" || data.status === "pending") {
             pollStatus();
           } else if (data.status === "failed") {
-            statusSection.hidden = false;
-            statusDiv.className = "flash alert";
+            uploadSection.setAttribute("open", "");
             let msg = "Latest upload failed.";
             if (data.errors && data.errors.length) {
               msg += " " + data.errors.map(e => e.detail || e).join("; ");
             }
-            statusDiv.textContent = msg;
+            showFeedback(msg, "alert");
           }
         })
         .catch(() => {});
@@ -242,9 +234,10 @@
     // --- Status polling ---
 
     function pollStatus() {
-      statusSection.hidden = false;
-      statusDiv.textContent = "Processing…";
-      statusDiv.setAttribute("aria-busy", "true");
+      uploadSection.setAttribute("open", "");
+      showFeedback("Processing…", "notice");
+      feedback.setAttribute("aria-busy", "true");
+      uploadSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
       let attempts = 0;
       const maxAttempts = 60;
@@ -257,40 +250,42 @@
 
           if (data.status === "ready") {
             clearInterval(interval);
-            feedback.hidden = true;
-            statusDiv.removeAttribute("aria-busy");
-            statusDiv.className = "flash notice";
-            statusDiv.textContent = "Catalog is ready!";
+            feedback.removeAttribute("aria-busy");
+            showFeedback("Catalog is ready!", "notice");
             searchSection.hidden = false;
             searchInput.value = "";
             searchResults.innerHTML = "";
             if (data.song_count != null) {
               songCountEl.textContent = data.song_count.toLocaleString() + " songs";
             }
+            setTimeout(() => {
+              uploadSection.removeAttribute("open");
+              feedback.hidden = true;
+            }, 3000);
           } else if (data.status === "failed") {
             clearInterval(interval);
-            feedback.hidden = true;
-            statusDiv.removeAttribute("aria-busy");
-            statusDiv.className = "flash alert";
+            feedback.removeAttribute("aria-busy");
             let msg = data.active_db_version ? "Latest upload failed." : "Processing failed.";
             if (data.errors && data.errors.length) {
               msg += " " + data.errors.map(e => e.detail || e).join("; ");
             }
-            statusDiv.textContent = msg;
+            showFeedback(msg, "alert");
             if (data.active_db_version) {
               searchSection.hidden = false;
             }
           } else {
-            statusDiv.textContent = "Processing… (status: " + data.status + ")";
+            showFeedback("Processing…", "notice");
+            feedback.setAttribute("aria-busy", "true");
           }
         } catch (err) {
-          statusDiv.textContent = "Checking status…";
+          showFeedback("Checking status…", "notice");
+          feedback.setAttribute("aria-busy", "true");
         }
 
         if (attempts >= maxAttempts) {
           clearInterval(interval);
-          statusDiv.removeAttribute("aria-busy");
-          statusDiv.textContent = "Status check timed out. Refresh the page to check again.";
+          feedback.removeAttribute("aria-busy");
+          showFeedback("Status check timed out. Refresh the page to check again.", "alert");
         }
       }, 2000);
     }
