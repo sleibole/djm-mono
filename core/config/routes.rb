@@ -49,5 +49,11 @@ Rails.application.routes.draw do
 
   get "landing/paper", to: "landing_pages#paper", as: :landing_paper
 
+  namespace :webhooks do
+    namespace :sns do
+      post "ses", to: "ses#create"
+    end
+  end
+
   root "home#show"
 end

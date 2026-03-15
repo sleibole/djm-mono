@@ -21,6 +21,8 @@ class User < ApplicationRecord
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
+  scope :emailable, -> { where(email_status: "active") }
+
   MAX_FAILED_ATTEMPTS = 10
 
   def email_confirmed?

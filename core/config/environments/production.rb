@@ -53,14 +53,12 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
-
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "djmagic.io", protocol: "https" }
 
-  # AWS SES SMTP — credentials set via fly secrets
+  # Deliver via AWS SES SMTP — credentials set via fly secrets
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.smtp_settings = {
     user_name: ENV["SES_SMTP_USERNAME"],
     password: ENV["SES_SMTP_PASSWORD"],

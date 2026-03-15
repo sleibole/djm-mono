@@ -2,12 +2,12 @@
 
 one:
   user: one
-  token_digest: MyString
+  token_digest: digest_one_abc123
   expires_at: 2026-03-07 05:14:23
   consumed_at: 2026-03-07 05:14:23
 
 two:
   user: two
-  token_digest: MyString
+  token_digest: digest_two_def456
   expires_at: 2026-03-07 05:14:23
   consumed_at: 2026-03-07 05:14:23

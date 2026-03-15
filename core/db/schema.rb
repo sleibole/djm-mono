@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_130849) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_162421) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -94,7 +94,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_130849) do
     t.string "display_name"
     t.string "email", null: false
     t.datetime "email_confirmed_at"
+    t.string "email_status", default: "active", null: false
+    t.string "email_status_reason"
     t.integer "failed_login_attempts", default: 0, null: false
+    t.datetime "last_bounced_at"
+    t.datetime "last_complained_at"
+    t.datetime "last_delivered_at"
     t.datetime "locked_at"
     t.string "password_digest"
     t.integer "role", default: 0, null: false

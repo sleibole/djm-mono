@@ -209,6 +209,57 @@ fly logs -a djm-core
 fly logs -a djm-songs-1
 ```
 
+### Transactional Email (SES)
+
+| Setting | Value |
+|---------|-------|
+| Sender | `DJMagic <noreply@djmagic.io>` |
+| SES region | `us-east-1` |
+| Configuration set | `djmagic-app` |
+| Required secrets | `SES_SMTP_USERNAME`, `SES_SMTP_PASSWORD` |
+
+Every outbound email includes the `X-SES-CONFIGURATION-SET: djmagic-app` header, which routes delivery/bounce/complaint events to the SNS topic configured in the SES console.
+
+**Verifying delivery after deploy:**
+
+```bash
+# Via rake task
+fly ssh console -a djm-core -C "/rails/bin/rails email:test[you@example.com]"
+
+# Or via Rails runner
+fly ssh console -a djm-core -C "/rails/bin/rails runner 'SystemMailer.ses_test_email(to: \"you@example.com\").deliver_now'"
+```
+
+Replace `you@example.com` with a real address you can check. In development, mail is routed to `localhost:1025` (use [Mailpit](https://github.com/axllent/mailpit) or similar).
+
+### SNS Webhook (SES Events)
+
+The app exposes `POST /webhooks/sns/ses` to receive SES delivery, bounce, and complaint notifications via SNS.
+
+**How it works:**
+
+1. SES publishes events to an SNS topic (configured via the `djmagic-app` configuration set).
+2. SNS sends HTTPS POST requests to the webhook endpoint.
+3. The app auto-confirms the SNS subscription on first request.
+4. Delivery events update `last_delivered_at` on the matching user.
+5. Bounce events mark the user as `email_status: "bounced"` and record the bounce reason.
+6. Complaint events mark the user as `email_status: "complained"` and record the feedback type.
+
+Users with `email_status` other than `"active"` can be filtered out via `User.emailable` to avoid sending to bad addresses.
+
+**Subscribing the SNS topic (one-time setup):**
+
+```bash
+aws sns subscribe \
+  --topic-arn "arn:aws:sns:us-east-1:ACCOUNT_ID:TOPIC_NAME" \
+  --protocol https \
+  --notification-endpoint "https://djmagic.io/webhooks/sns/ses"
+```
+
+Replace `ACCOUNT_ID` and `TOPIC_NAME` with your actual values. The app will automatically confirm the subscription when SNS sends the confirmation request.
+
+You can also subscribe via the AWS SES console: **Configuration sets → djmagic-app → Event destinations → edit the SNS destination** and ensure the subscription is active.
+
 ### Scaling (Adding Replicas)
 
 LiteFS is already configured for multi-node operation. To add a read replica in another region:
