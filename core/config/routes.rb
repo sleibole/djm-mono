@@ -47,5 +47,7 @@ Rails.application.routes.draw do
   patch "account/slug", to: "account#update_slug", as: :account_slug
   patch "account/display_name", to: "account#update_display_name", as: :account_display_name
 
+  get "landing/paper", to: "landing_pages#paper", as: :landing_paper
+
   root "home#show"
 end

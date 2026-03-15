@@ -55,7 +55,12 @@
     <header class="container">
       <nav>
         <ul>
-          <li><strong><a href="/">DJMagic.io</a></strong></li>
+          <li>
+            <%= link_to root_path, class: "site-logo", title: "Home" do %>
+              <%= image_tag "brand_icons/dark/dark_64.png", alt: "DJMagic.io", class: "brand-icon" %>
+              <span class="brand-text">DJMagic.io</span>
+            <% end %>
+          </li>
         </ul>
         <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'false' ? 'true' : 'false'); document.getElementById('nav-menu').classList.toggle('open')">
           <span class="hamburger"></span>

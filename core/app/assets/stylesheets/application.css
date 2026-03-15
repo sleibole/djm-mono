@@ -53,6 +53,22 @@ header nav form input[type="submit"] {
   margin-bottom: 0;
 }
 
+.site-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--pico-contrast);
+}
+
+.brand-icon {
+  border-radius: 8px;
+  height: 2rem;
+  width: auto;
+}
+
 .nav-toggle {
   display: none;
   background: none;
@@ -120,6 +136,10 @@ header nav form input[type="submit"] {
 
   .nav-menu li {
     padding: 0.25rem 0;
+  }
+
+  .brand-text {
+    display: none;
   }
 }
 
