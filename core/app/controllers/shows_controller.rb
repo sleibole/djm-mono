@@ -13,7 +13,7 @@ class ShowsController < ApplicationController
   end
 
   def create
-    catalog = current_user.catalogs.find(params[:catalog_id])
+    catalog = params[:catalog_id].present? ? current_user.catalogs.find(params[:catalog_id]) : nil
     current_user.ensure_slug!
 
     scheduled_at = params[:scheduled_at].presence
@@ -25,6 +25,7 @@ class ShowsController < ApplicationController
       slug: params[:slug].presence,
       show_type: params[:show_type].presence || current_user.default_show_type,
       rotation_style: current_user.default_rotation_style,
+      manual_entry_enabled: catalog ? ActiveModel::Type::Boolean.new.cast(params[:manual_entry_enabled]) : true,
       max_songs_per_singer: current_user.default_max_songs_per_singer,
       status: scheduling ? "scheduled" : "active",
       started_at: scheduling ? nil : Time.current,
@@ -46,7 +47,7 @@ class ShowsController < ApplicationController
     @waiting = @show.waiting_entries.includes(:participant)
     @pending = @show.pending_entries.includes(:participant)
     @completed = @show.queue_entries.completed.includes(:participant).order(performed_at: :desc)
-    @songs_app_url = @show.catalog.songs_app_url
+    @songs_app_url = @show.catalog&.songs_app_url
   end
 
   def update

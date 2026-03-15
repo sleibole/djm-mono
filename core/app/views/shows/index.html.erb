@@ -18,7 +18,7 @@
       <% @scheduled_shows.each do |show| %>
         <tr>
           <td><%= show.display_name %></td>
-          <td><%= show.catalog.name %></td>
+          <td><%= show.catalog&.name || "Freeform" %></td>
           <td><%= show.show_type.capitalize %></td>
           <td><%= show.scheduled_at&.strftime("%b %-d, %l:%M %p") || "—" %></td>
           <td><a href="<%= show_path(show) %>">Manage</a></td>

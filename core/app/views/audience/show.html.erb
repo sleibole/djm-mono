@@ -19,67 +19,88 @@
     <p><a href="<%= dj_profile_path(handle: @dj.slug) %>">See other shows</a></p>
   </section>
 <% elsif @show.active? %>
-  <%# --- Step 1: Search and select a song --- %>
-  <section id="step-search">
-    <h3>Step 1: Find your song</h3>
-    <p><small>Search the catalog below, then tap a song to select it.</small></p>
-    <input type="search" id="audience-search-input" placeholder="Search by title or artist…" autocomplete="off" autofocus>
-    <div id="audience-search-results"></div>
-    <div id="audience-load-more" hidden>
-      <button type="button" id="load-more-btn" class="outline secondary">Load more results</button>
-    </div>
-  </section>
+  <% if @show.has_catalog? %>
+    <%# --- Catalog mode: search and select a song --- %>
+    <section id="step-search">
+      <h3>Step 1: Find your song</h3>
+      <p><small>Search the catalog below, then tap a song to select it.</small></p>
+      <input type="search" id="audience-search-input" placeholder="Search by title or artist…" autocomplete="off" autofocus>
+      <div id="audience-search-results"></div>
+      <div id="audience-load-more" hidden>
+        <button type="button" id="load-more-btn" class="outline secondary">Load more results</button>
+      </div>
+    </section>
 
-  <%# --- Step 2: Confirm song and enter name --- %>
-  <section id="step-submit" hidden>
-    <h3>Step 2: Enter your name</h3>
-    <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-request-form" do %>
-      <article id="selected-song-display">
-        <p>
-          <strong id="audience-selected-title"></strong> &mdash; <span id="audience-selected-artist"></span>
-          <span id="audience-selected-version"></span>
-        </p>
-        <button type="button" id="change-song-btn" class="outline secondary">Change song</button>
-      </article>
+    <section id="step-submit" hidden>
+      <h3>Step 2: Enter your name</h3>
+      <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-request-form" do %>
+        <article id="selected-song-display">
+          <p>
+            <strong id="audience-selected-title"></strong> &mdash; <span id="audience-selected-artist"></span>
+            <span id="audience-selected-version"></span>
+          </p>
+          <button type="button" id="change-song-btn" class="outline secondary">Change song</button>
+        </article>
 
-      <input type="hidden" name="song_title" id="audience-hidden-title">
-      <input type="hidden" name="song_artist" id="audience-hidden-artist">
-      <input type="hidden" name="song_version" id="audience-hidden-version">
-      <input type="hidden" name="song_external_id" id="audience-hidden-external-id">
+        <input type="hidden" name="song_title" id="audience-hidden-title">
+        <input type="hidden" name="song_artist" id="audience-hidden-artist">
+        <input type="hidden" name="song_version" id="audience-hidden-version">
+        <input type="hidden" name="song_external_id" id="audience-hidden-external-id">
 
-      <label for="participant_name">Your name</label>
-      <input type="text" name="participant_name" id="participant_name"
-             placeholder="e.g. Mike S."
-             value="<%= @participant_name %>"
-             required autocomplete="off">
-      <small>Add a last initial if it's a common name so the host can tell you apart.</small>
+        <label for="participant_name">Your name</label>
+        <input type="text" name="participant_name" id="participant_name"
+               placeholder="e.g. Mike S."
+               value="<%= @participant_name %>"
+               required autocomplete="off">
+        <small>Add a last initial if it's a common name so the host can tell you apart.</small>
 
-      <button type="submit">Submit Request</button>
+        <button type="submit">Submit Request</button>
+      <% end %>
+    </section>
+
+    <% if @show.manual_entry_enabled? %>
+      <section id="manual-entry-section">
+        <details id="manual-entry-details" class="section-panel">
+          <summary>Can't find your song?</summary>
+          <p><small>Enter the song details below and we'll pass them along to the host.</small></p>
+          <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-manual-form" do %>
+            <label for="manual-title">Song title</label>
+            <input type="text" name="song_title" id="manual-title" placeholder="Song title" required>
+
+            <label for="manual-artist">Artist</label>
+            <input type="text" name="song_artist" id="manual-artist" placeholder="Artist (optional)">
+
+            <label for="manual-participant-name">Your name</label>
+            <input type="text" name="participant_name" id="manual-participant-name"
+                   placeholder="e.g. Mike S."
+                   value="<%= @participant_name %>"
+                   required autocomplete="off">
+
+            <button type="submit">Submit Request</button>
+          <% end %>
+        </details>
+      </section>
     <% end %>
-  </section>
+  <% else %>
+    <%# --- Freeform-only mode: no catalog --- %>
+    <section id="freeform-request">
+      <h3>Request a Song</h3>
+      <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-freeform-form" do %>
+        <label for="freeform-title">Song title</label>
+        <input type="text" name="song_title" id="freeform-title" placeholder="Song title" required autofocus>
 
-  <% if @show.manual_entry_enabled? %>
-    <%# --- Manual Entry --- %>
-    <section id="manual-entry-section">
-      <details id="manual-entry-details" class="section-panel">
-        <summary>Can't find your song?</summary>
-        <p><small>Enter the song details below and we'll pass them along to the host.</small></p>
-        <%= form_with url: audience_request_path(handle: @dj.slug, show_slug: @show.slug), method: :post, id: "audience-manual-form" do %>
-          <label for="manual-title">Song title</label>
-          <input type="text" name="song_title" id="manual-title" placeholder="Song title" required>
+        <label for="freeform-artist">Artist <small>(optional)</small></label>
+        <input type="text" name="song_artist" id="freeform-artist" placeholder="Artist">
 
-          <label for="manual-artist">Artist</label>
-          <input type="text" name="song_artist" id="manual-artist" placeholder="Artist (optional)">
+        <label for="freeform-participant-name">Your name</label>
+        <input type="text" name="participant_name" id="freeform-participant-name"
+               placeholder="e.g. Mike S."
+               value="<%= @participant_name %>"
+               required autocomplete="off">
+        <small>Add a last initial if it's a common name so the host can tell you apart.</small>
 
-          <label for="manual-participant-name">Your name</label>
-          <input type="text" name="participant_name" id="manual-participant-name"
-                 placeholder="e.g. Mike S."
-                 value="<%= @participant_name %>"
-                 required autocomplete="off">
-
-          <button type="submit">Submit Request</button>
-        <% end %>
-      </details>
+        <button type="submit">Submit Request</button>
+      <% end %>
     </section>
   <% end %>
 <% else %>
@@ -91,7 +112,7 @@
 
 <p><a href="<%= dj_profile_path(handle: @dj.slug) %>">&larr; Back to <%= @dj.public_name %></a></p>
 
-<% if @show.active? %>
+<% if @show.active? && @show.has_catalog? %>
 <script>
   (function() {
     var searchUrl = "<%= @songs_app_url %>/catalogs/<%= @show.catalog_id %>/search";

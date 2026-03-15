@@ -191,36 +191,43 @@
 
       <fieldset>
         <label>Song</label>
-        <div role="group" class="tab-group">
-          <button type="button" id="mode-search" class="active" onclick="toggleSongMode('search')">Search Catalog</button>
-          <button type="button" id="mode-manual" onclick="toggleSongMode('manual')">Enter Manually</button>
-        </div>
+        <% if @show.has_catalog? %>
+          <div role="group" class="tab-group">
+            <button type="button" id="mode-search" class="active" onclick="toggleSongMode('search')">Search Catalog</button>
+            <button type="button" id="mode-manual" onclick="toggleSongMode('manual')">Enter Manually</button>
+          </div>
 
-        <div id="song-search-mode">
-          <input type="search" id="song-search-input" placeholder="Search by title or artist…" autocomplete="off">
-          <div id="song-search-results"></div>
-        </div>
+          <div id="song-search-mode">
+            <input type="search" id="song-search-input" placeholder="Search by title or artist…" autocomplete="off">
+            <div id="song-search-results"></div>
+          </div>
 
-        <div id="song-manual-mode" hidden>
+          <div id="song-manual-mode" hidden>
+            <label for="manual-song-title"><i class="fa-solid fa-music"></i> Song Title</label>
+            <input type="text" name="song_title" id="manual-song-title" placeholder="Song title">
+            <label for="manual-song-artist"><i class="fa-solid fa-guitar"></i> Artist</label>
+            <input type="text" name="song_artist" id="manual-song-artist" placeholder="Artist">
+          </div>
+
+          <div id="song-selected" hidden>
+            <article>
+              <p>
+                <strong id="selected-song-title"></strong> &mdash; <span id="selected-song-artist"></span>
+                <span id="selected-song-version"></span>
+              </p>
+              <button type="button" class="outline secondary" onclick="clearSongSelection()">Change</button>
+            </article>
+            <input type="hidden" name="song_title" id="hidden-song-title">
+            <input type="hidden" name="song_artist" id="hidden-song-artist">
+            <input type="hidden" name="song_version" id="hidden-song-version">
+            <input type="hidden" name="song_external_id" id="hidden-song-external-id">
+          </div>
+        <% else %>
           <label for="manual-song-title"><i class="fa-solid fa-music"></i> Song Title</label>
           <input type="text" name="song_title" id="manual-song-title" placeholder="Song title">
           <label for="manual-song-artist"><i class="fa-solid fa-guitar"></i> Artist</label>
           <input type="text" name="song_artist" id="manual-song-artist" placeholder="Artist">
-        </div>
-
-        <div id="song-selected" hidden>
-          <article>
-            <p>
-              <strong id="selected-song-title"></strong> &mdash; <span id="selected-song-artist"></span>
-              <span id="selected-song-version"></span>
-            </p>
-            <button type="button" class="outline secondary" onclick="clearSongSelection()">Change</button>
-          </article>
-          <input type="hidden" name="song_title" id="hidden-song-title">
-          <input type="hidden" name="song_artist" id="hidden-song-artist">
-          <input type="hidden" name="song_version" id="hidden-song-version">
-          <input type="hidden" name="song_external_id" id="hidden-song-external-id">
-        </div>
+        <% end %>
       </fieldset>
 
       <button type="submit" id="add-queue-btn">Add to Queue</button>
@@ -286,11 +293,13 @@
       </label>
       <small>When enabled, audience song requests must be approved before entering the queue.</small>
 
-      <label>
-        <%= f.check_box :manual_entry_enabled %>
-        Allow manual song entry
-      </label>
-      <small>Let audience members request songs not in your catalog.</small>
+      <% if @show.has_catalog? %>
+        <label>
+          <%= f.check_box :manual_entry_enabled %>
+          Allow freeform song requests
+        </label>
+        <small>Let audience members request any song by typing in title and artist.</small>
+      <% end %>
 
       <label for="show_slug">Show URL slug</label>
       <%= f.text_field :slug, placeholder: "e.g. tuesday-karaoke" %>
@@ -311,141 +320,43 @@
 
 <script>
   (function() {
-    const searchUrl = "<%= @songs_app_url %>/catalogs/<%= @show.catalog_id %>/search";
-    const participantInput = document.getElementById("participant_name");
-    const participantIdInput = document.getElementById("participant_id");
-    const datalist = document.getElementById("participant-suggestions");
-    const songSearchInput = document.getElementById("song-search-input");
-    const songResults = document.getElementById("song-search-results");
+    var participantInput = document.getElementById("participant_name");
+    var participantIdInput = document.getElementById("participant_id");
+    var datalist = document.getElementById("participant-suggestions");
 
-    let participantTimer = null;
-    let songTimer = null;
+    if (participantInput && participantIdInput && datalist) {
+      var participantTimer = null;
 
-    // --- Participant autocomplete ---
-    participantInput.addEventListener("input", function() {
-      clearTimeout(participantTimer);
-      participantIdInput.value = "";
-      const q = participantInput.value.trim();
-      if (!q) { datalist.innerHTML = ""; return; }
+      participantInput.addEventListener("input", function() {
+        clearTimeout(participantTimer);
+        participantIdInput.value = "";
+        var q = participantInput.value.trim();
+        if (!q) { datalist.innerHTML = ""; return; }
 
-      participantTimer = setTimeout(async () => {
-        try {
-          const resp = await fetch("/participants/autocomplete?q=" + encodeURIComponent(q));
-          const participants = await resp.json();
-          datalist.innerHTML = participants.map(p =>
-            '<option value="' + escapeAttr(p.name) + '" data-id="' + p.id + '">'
-          ).join("");
-        } catch(e) {}
-      }, 200);
-    });
-
-    participantInput.addEventListener("change", function() {
-      const opts = datalist.querySelectorAll("option");
-      for (const opt of opts) {
-        if (opt.value === participantInput.value) {
-          participantIdInput.value = opt.dataset.id;
-          break;
-        }
-      }
-    });
-
-    // --- Song mode toggle ---
-    window.toggleSongMode = function(mode) {
-      const searchMode = document.getElementById("song-search-mode");
-      const manualMode = document.getElementById("song-manual-mode");
-      const selected = document.getElementById("song-selected");
-      const searchBtn = document.getElementById("mode-search");
-      const manualBtn = document.getElementById("mode-manual");
-
-      selected.hidden = true;
-
-      if (mode === "search") {
-        searchMode.hidden = false;
-        manualMode.hidden = true;
-        searchBtn.className = "active";
-        manualBtn.className = "";
-        document.getElementById("manual-song-title").removeAttribute("name");
-        document.getElementById("manual-song-artist").removeAttribute("name");
-      } else {
-        searchMode.hidden = true;
-        manualMode.hidden = false;
-        searchBtn.className = "";
-        manualBtn.className = "active";
-        document.getElementById("manual-song-title").setAttribute("name", "song_title");
-        document.getElementById("manual-song-artist").setAttribute("name", "song_artist");
-        clearHiddenSongFields();
-      }
-    };
-
-    // --- Song search ---
-    if (songSearchInput) {
-      songSearchInput.addEventListener("input", function() {
-        clearTimeout(songTimer);
-        const q = songSearchInput.value.trim();
-        if (!q) { songResults.innerHTML = ""; return; }
-
-        songTimer = setTimeout(async () => {
+        participantTimer = setTimeout(async () => {
           try {
-            const resp = await fetch(searchUrl + "?q=" + encodeURIComponent(q) + "&limit=10");
-            const data = await resp.json();
-            if (data.songs.length === 0) {
-              songResults.innerHTML = "<p><small>No songs found.</small></p>";
-              return;
-            }
-            let html = '<table class="striped" role="grid"><tbody>';
-            data.songs.forEach(function(song) {
-              html += '<tr style="cursor:pointer" onclick=\'selectSong(' + JSON.stringify(song).replace(/'/g, "&#39;") + ')\'>';
-              html += '<td>' + escapeHtml(song.title) + '</td>';
-              html += '<td>' + escapeHtml(song.artist) + '</td>';
-              if (song.version) html += '<td><small>' + escapeHtml(song.version) + '</small></td>';
-              html += '</tr>';
-            });
-            html += '</tbody></table>';
-            songResults.innerHTML = html;
-          } catch(e) {
-            songResults.innerHTML = '<p><small>Search unavailable.</small></p>';
+            var resp = await fetch("/participants/autocomplete?q=" + encodeURIComponent(q));
+            var participants = await resp.json();
+            datalist.innerHTML = participants.map(p =>
+              '<option value="' + escapeAttr(p.name) + '" data-id="' + p.id + '">'
+            ).join("");
+          } catch(e) {}
+        }, 200);
+      });
+
+      participantInput.addEventListener("change", function() {
+        var opts = datalist.querySelectorAll("option");
+        for (var i = 0; i < opts.length; i++) {
+          if (opts[i].value === participantInput.value) {
+            participantIdInput.value = opts[i].dataset.id;
+            break;
           }
-        }, 300);
+        }
       });
     }
 
-    window.selectSong = function(song) {
-      document.getElementById("hidden-song-title").value = song.title;
-      document.getElementById("hidden-song-artist").value = song.artist;
-      document.getElementById("hidden-song-version").value = song.version || "";
-      document.getElementById("hidden-song-external-id").value = song.external_id || "";
-
-      document.getElementById("selected-song-title").textContent = song.title;
-      document.getElementById("selected-song-artist").textContent = song.artist;
-      const versionSpan = document.getElementById("selected-song-version");
-      versionSpan.textContent = song.version ? "(" + song.version + ")" : "";
-
-      document.getElementById("song-search-mode").hidden = true;
-      document.getElementById("song-manual-mode").hidden = true;
-      document.getElementById("song-selected").hidden = false;
-
-      document.getElementById("manual-song-title").removeAttribute("name");
-      document.getElementById("manual-song-artist").removeAttribute("name");
-    };
-
-    window.clearSongSelection = function() {
-      clearHiddenSongFields();
-      document.getElementById("song-selected").hidden = true;
-      document.getElementById("song-search-mode").hidden = false;
-      songSearchInput.value = "";
-      songResults.innerHTML = "";
-      songSearchInput.focus();
-    };
-
-    function clearHiddenSongFields() {
-      document.getElementById("hidden-song-title").value = "";
-      document.getElementById("hidden-song-artist").value = "";
-      document.getElementById("hidden-song-version").value = "";
-      document.getElementById("hidden-song-external-id").value = "";
-    }
-
     function escapeHtml(text) {
-      const d = document.createElement("div");
+      var d = document.createElement("div");
       d.textContent = text;
       return d.innerHTML;
     }
@@ -454,8 +365,107 @@
       return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Set initial state: search mode active, manual fields have no name
-    document.getElementById("manual-song-title").removeAttribute("name");
-    document.getElementById("manual-song-artist").removeAttribute("name");
+    <% if @show.has_catalog? %>
+      var searchUrl = "<%= @songs_app_url %>/catalogs/<%= @show.catalog_id %>/search";
+      var songSearchInput = document.getElementById("song-search-input");
+      var songResults = document.getElementById("song-search-results");
+      var songTimer = null;
+
+      window.toggleSongMode = function(mode) {
+        var searchMode = document.getElementById("song-search-mode");
+        var manualMode = document.getElementById("song-manual-mode");
+        var selected = document.getElementById("song-selected");
+        var searchBtn = document.getElementById("mode-search");
+        var manualBtn = document.getElementById("mode-manual");
+
+        selected.hidden = true;
+
+        if (mode === "search") {
+          searchMode.hidden = false;
+          manualMode.hidden = true;
+          searchBtn.className = "active";
+          manualBtn.className = "";
+          document.getElementById("manual-song-title").removeAttribute("name");
+          document.getElementById("manual-song-artist").removeAttribute("name");
+        } else {
+          searchMode.hidden = true;
+          manualMode.hidden = false;
+          searchBtn.className = "";
+          manualBtn.className = "active";
+          document.getElementById("manual-song-title").setAttribute("name", "song_title");
+          document.getElementById("manual-song-artist").setAttribute("name", "song_artist");
+          clearHiddenSongFields();
+        }
+      };
+
+      if (songSearchInput) {
+        songSearchInput.addEventListener("input", function() {
+          clearTimeout(songTimer);
+          var q = songSearchInput.value.trim();
+          if (!q) { songResults.innerHTML = ""; return; }
+
+          songTimer = setTimeout(async () => {
+            try {
+              var resp = await fetch(searchUrl + "?q=" + encodeURIComponent(q) + "&limit=10");
+              var data = await resp.json();
+              if (data.songs.length === 0) {
+                songResults.innerHTML = "<p><small>No songs found.</small></p>";
+                return;
+              }
+              var html = '<table class="striped" role="grid"><tbody>';
+              data.songs.forEach(function(song) {
+                html += '<tr style="cursor:pointer" onclick=\'selectSong(' + JSON.stringify(song).replace(/'/g, "&#39;") + ')\'>';
+                html += '<td>' + escapeHtml(song.title) + '</td>';
+                html += '<td>' + escapeHtml(song.artist) + '</td>';
+                if (song.version) html += '<td><small>' + escapeHtml(song.version) + '</small></td>';
+                html += '</tr>';
+              });
+              html += '</tbody></table>';
+              songResults.innerHTML = html;
+            } catch(e) {
+              songResults.innerHTML = '<p><small>Search unavailable.</small></p>';
+            }
+          }, 300);
+        });
+      }
+
+      window.selectSong = function(song) {
+        document.getElementById("hidden-song-title").value = song.title;
+        document.getElementById("hidden-song-artist").value = song.artist;
+        document.getElementById("hidden-song-version").value = song.version || "";
+        document.getElementById("hidden-song-external-id").value = song.external_id || "";
+
+        document.getElementById("selected-song-title").textContent = song.title;
+        document.getElementById("selected-song-artist").textContent = song.artist;
+        var versionSpan = document.getElementById("selected-song-version");
+        versionSpan.textContent = song.version ? "(" + song.version + ")" : "";
+
+        document.getElementById("song-search-mode").hidden = true;
+        document.getElementById("song-manual-mode").hidden = true;
+        document.getElementById("song-selected").hidden = false;
+
+        document.getElementById("manual-song-title").removeAttribute("name");
+        document.getElementById("manual-song-artist").removeAttribute("name");
+      };
+
+      window.clearSongSelection = function() {
+        clearHiddenSongFields();
+        document.getElementById("song-selected").hidden = true;
+        document.getElementById("song-search-mode").hidden = false;
+        songSearchInput.value = "";
+        songResults.innerHTML = "";
+        songSearchInput.focus();
+      };
+
+      function clearHiddenSongFields() {
+        document.getElementById("hidden-song-title").value = "";
+        document.getElementById("hidden-song-artist").value = "";
+        document.getElementById("hidden-song-version").value = "";
+        document.getElementById("hidden-song-external-id").value = "";
+      }
+
+      document.getElementById("manual-song-title").removeAttribute("name");
+      document.getElementById("manual-song-artist").removeAttribute("name");
+    <% end %>
   })();
 </script>

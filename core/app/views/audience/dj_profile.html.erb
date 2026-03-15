@@ -15,7 +15,7 @@
           <mark><%= show.show_type.capitalize %></mark>
           &mdash; Started <%= show.started_at.strftime("%l:%M %p") %>
         </p>
-        <a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>" role="button">Browse Songs &amp; Request</a>
+        <a href="<%= audience_show_path(handle: @dj.slug, show_slug: show.slug) %>" role="button"><%= show.has_catalog? ? "Browse Songs & Request" : "Make a Request" %></a>
       </article>
     <% end %>
   </section>

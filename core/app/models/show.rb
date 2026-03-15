@@ -3,7 +3,7 @@ class Show < ApplicationRecord
   ROTATION_STYLES = %w[standard].freeze
   STATUSES = %w[scheduled active ended].freeze
 
-  belongs_to :catalog
+  belongs_to :catalog, optional: true
   belongs_to :user
   has_many :queue_entries, -> { order(:position) }, dependent: :destroy
 
@@ -37,6 +37,10 @@ class Show < ApplicationRecord
     karaoke? ? "Singer" : "Requester"
   end
 
+  def has_catalog?
+    catalog_id.present?
+  end
+
   def scheduled?
     status == "scheduled"
   end
@@ -50,7 +54,7 @@ class Show < ApplicationRecord
   end
 
   def display_name
-    name.presence || catalog.name
+    name.presence || catalog&.name || "Untitled Show"
   end
 
   def start!

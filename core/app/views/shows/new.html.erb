@@ -1,67 +1,80 @@
 <h1>New Show</h1>
 
-<% if @catalogs.empty? %>
-  <p>You need a catalog with songs before you can start a show.</p>
-  <p><a href="<%= new_catalog_path %>" role="button">Create a Catalog</a></p>
-<% else %>
-  <%= form_with url: shows_path, method: :post, id: "new-show-form" do |f| %>
-    <label for="show_name"><i class="fa-solid fa-microphone"></i> Show Name <small>(optional)</small></label>
-    <input type="text" name="name" id="show_name" placeholder="e.g. Friday Night Karaoke">
+<%= form_with url: shows_path, method: :post, id: "new-show-form" do |f| %>
+  <label for="show_name"><i class="fa-solid fa-microphone"></i> Show Name <small>(optional)</small></label>
+  <input type="text" name="name" id="show_name" placeholder="e.g. Friday Night Karaoke">
 
-    <label for="show_slug"><i class="fa-solid fa-link"></i> URL Slug <small>(optional &mdash; auto-generated from name)</small></label>
-    <input type="text" name="slug" id="show_slug" placeholder="auto-generated">
+  <label for="show_slug"><i class="fa-solid fa-link"></i> URL Slug <small>(optional &mdash; auto-generated from name)</small></label>
+  <input type="text" name="slug" id="show_slug" placeholder="auto-generated">
 
-    <label for="catalog_id">Catalog</label>
-    <select name="catalog_id" id="catalog_id" required>
-      <option value="" disabled selected>Choose a catalog…</option>
-      <% @catalogs.each do |catalog| %>
-        <option value="<%= catalog.id %>"><%= catalog.name %></option>
-      <% end %>
-    </select>
+  <label for="catalog_id">Catalog</label>
+  <select name="catalog_id" id="catalog_id">
+    <option value="">None (freeform requests only)</option>
+    <% @catalogs.each do |catalog| %>
+      <option value="<%= catalog.id %>"><%= catalog.name %></option>
+    <% end %>
+  </select>
 
-    <label>Show Type</label>
-    <fieldset>
-      <label>
-        <input type="radio" name="show_type" value="karaoke" checked>
-        Karaoke
-      </label>
-      <label>
-        <input type="radio" name="show_type" value="dj">
-        DJ
-      </label>
-    </fieldset>
+  <div id="freeform-checkbox-field">
+    <label>
+      <input type="checkbox" name="manual_entry_enabled" value="1" id="manual_entry_enabled">
+      Allow freeform song requests
+    </label>
+    <small>Let audience members request any song by typing in title and artist.</small>
+  </div>
 
-    <label>When</label>
-    <fieldset>
-      <label>
-        <input type="radio" name="timing" value="now" checked onchange="document.getElementById('scheduled-at-field').hidden = true">
-        Start Now
-      </label>
-      <label>
-        <input type="radio" name="timing" value="later" onchange="document.getElementById('scheduled-at-field').hidden = false">
-        Schedule for Later
-      </label>
-    </fieldset>
+  <label>Show Type</label>
+  <fieldset>
+    <label>
+      <input type="radio" name="show_type" value="karaoke" checked>
+      Karaoke
+    </label>
+    <label>
+      <input type="radio" name="show_type" value="dj">
+      DJ
+    </label>
+  </fieldset>
 
-    <div id="scheduled-at-field" hidden>
-      <label for="scheduled_at"><i class="fa-solid fa-calendar"></i> Scheduled Date &amp; Time</label>
-      <input type="datetime-local" name="scheduled_at" id="scheduled_at">
-    </div>
+  <label>When</label>
+  <fieldset>
+    <label>
+      <input type="radio" name="timing" value="now" checked onchange="document.getElementById('scheduled-at-field').hidden = true">
+      Start Now
+    </label>
+    <label>
+      <input type="radio" name="timing" value="later" onchange="document.getElementById('scheduled-at-field').hidden = false">
+      Schedule for Later
+    </label>
+  </fieldset>
 
-    <button type="submit" id="submit-btn">Start Show</button>
-  <% end %>
+  <div id="scheduled-at-field" hidden>
+    <label for="scheduled_at"><i class="fa-solid fa-calendar"></i> Scheduled Date &amp; Time</label>
+    <input type="datetime-local" name="scheduled_at" id="scheduled_at">
+  </div>
 
-  <script>
-    (function() {
-      const form = document.getElementById("new-show-form");
-      const btn = document.getElementById("submit-btn");
-      form.querySelectorAll('input[name="timing"]').forEach(function(radio) {
-        radio.addEventListener("change", function() {
-          btn.textContent = radio.value === "later" ? "Schedule Show" : "Start Show";
-        });
-      });
-    })();
-  </script>
+  <button type="submit" id="submit-btn">Start Show</button>
 <% end %>
+
+<script>
+  (function() {
+    var form = document.getElementById("new-show-form");
+    var btn = document.getElementById("submit-btn");
+    var catalogSelect = document.getElementById("catalog_id");
+    var freeformField = document.getElementById("freeform-checkbox-field");
+
+    function updateFreeformVisibility() {
+      freeformField.hidden = !catalogSelect.value;
+    }
+
+    catalogSelect.addEventListener("change", updateFreeformVisibility);
+    updateFreeformVisibility();
+
+    form.querySelectorAll('input[name="timing"]').forEach(function(radio) {
+      radio.addEventListener("change", function() {
+        btn.textContent = radio.value === "later" ? "Schedule Show" : "Start Show";
+      });
+    });
+  })();
+</script>
 
 <p><a href="<%= shows_path %>">Back to shows</a></p>

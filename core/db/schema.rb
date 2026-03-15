@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_134724) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_130849) do
   create_table "catalogs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -66,7 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_134724) do
 
   create_table "shows", force: :cascade do |t|
     t.boolean "approval_required", default: true, null: false
-    t.integer "catalog_id", null: false
+    t.integer "catalog_id"
     t.datetime "created_at", null: false
     t.datetime "ended_at"
     t.boolean "manual_entry_enabled", default: false, null: false
